@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"P0 baseline implementation at tests/harness.test.ts@2b3e7327d5d3573d776f3b066801dfd7d5a65982.","body":{"commit":"2b3e7327d5d3573d776f3b066801dfd7d5a65982","path":"tests/harness.test.ts"}}
+{"kind":"artifact","text":"P0 baseline implementation at tests/workers/baseline.test.ts@2b3e7327d5d3573d776f3b066801dfd7d5a65982.","body":{"commit":"2b3e7327d5d3573d776f3b066801dfd7d5a65982","path":"tests/workers/baseline.test.ts"}}
