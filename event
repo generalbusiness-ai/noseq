@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:2f97bd4d8c85270ce523539add8f493a53ac747c","text":"Merge retired a covered predecessor; the successor is at package-lock.json."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:3ea90b689eda552ce9470deb85f39fd244fff568","text":"Merge retired a covered predecessor; the successor is at scripts/crypto-preflight-evidence.ts."}
