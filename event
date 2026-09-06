@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tests/browser/host.test.ts","body":{"commit":"3321e70fcf42fbdb89f20db3f425ec3bc431c2d9","path":"tests/browser/host.test.ts"}}
+{"kind":"artifact","text":"Merge published the current artifact at tests/harness.test.ts","body":{"commit":"3321e70fcf42fbdb89f20db3f425ec3bc431c2d9","path":"tests/harness.test.ts"}}
