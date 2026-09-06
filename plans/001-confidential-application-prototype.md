@@ -117,7 +117,10 @@ before dependent work. Do not invent cryptography to make a gate pass.
 The independent [design report](2026-09-06-design-review.md) is signed report #50,
 accepted as planning input by #51. It reviewed the immutable architecture at the
 baseline, independently of this plan. Acceptance of the report does not assert
-that its feasibility gates have passed. No finding was rejected.
+that its feasibility gates have passed. Its findings are all covered below.
+A delayed second report #60 is assessed separately in
+[supplementary dispositions](2026-09-06-supplementary-review-dispositions.md),
+including explicit reasons for qualifying several suggested solutions.
 
 | Finding | Disposition and completion evidence |
 |---|---|
@@ -249,7 +252,11 @@ report incomplete until their implementations exist.
 `src/crypto/adapter.ts`, `tests/crypto-feasibility.test.ts`,
 `fixtures/crypto/`, `scripts/protocol-gates.ts`.
 
-1. Pin Marmot protocol and implementation together. Begin with
+1. Pin Marmot protocol and implementation together. Compare current account-proof,
+   transport, key-package and device-admission surfaces byte-for-byte; a library
+   README or older NIP-EE description is not a compatible binding. Do not implement
+   unfinished branch-draft multi-device wire as normative interop. Name any
+   Noseq-specific transport binding. Begin with
    [`marmot-ts` 2f60dbb](https://github.com/marmot-protocol/marmot-ts/tree/2f60dbb27d284f617ad873ccda568c0f2f07aa79)
    as a candidate, not an approved dependency. Document required signer operations;
    full account-proof support can need raw BIP-340 signing beyond `signEvent`.
@@ -258,7 +265,8 @@ report incomplete until their implementations exist.
 2. **G1:** feed identical signed prefixes in different arrival batches to separate
    devices, including competing MLS commits, late witnesses/selected branches, withdrawal
    notifications, messages from previous epochs and a client offline through
-   membership changes. Restart at every staged-state boundary. Test prefix
+   membership changes, including an existing member offline beyond the retained
+   epoch window. Restart at every staged-state boundary. Test prefix
    extension stability over an explicitly defined authenticated crypto-input set:
    a later accepted entry cannot change the meaning or
    effectiveness of an already-finalized Noseq entry. Document how the selected
@@ -297,10 +305,17 @@ report incomplete until their implementations exist.
    mirror can expose if it lacks equivalent read authorization. G5 here approves
    a bounded profile and conformance fixtures; P5 remains the separate gate for
    proving that the actual primary and mirror implement it.
-7. Write a threat table for malicious relay/provider, compromised host, removed
+7. Write an adversary-by-asset threat table for network observer, primary/mirror
+   reader/operator, malicious relay/provider, compromised host, removed
    member, admitted malicious member, stolen device and leaked recovery archive.
    Map each to protection, residual exposure and a fixture. Include confidential
-   definitions/assets and traffic metadata, not just action payloads.
+   definitions/assets, identity, membership, instance existence, traffic timing
+   and sizes, not just action payloads. For every cell state visible, hidden or
+   bounded, and test the chosen meaning.
+8. Bound initial library exploration to two engineering days per candidate before
+   an interim result and explicit continue/change/stop decision. This is a research
+   budget, not permission to mark an unresolved gate passed. Plain Nostr tooling
+   may replace reactive plumbing; changing encryption/history requires review.
 
 **Verify:** `npm run test:crypto-feasibility` and `npm run gate:protocol` exit 0
 only with G1–G5 supported by runnable vectors and reviewed decision records. The
@@ -435,7 +450,12 @@ trace without secrets.
    semantics, publication responses, REQ/CLOSE/EOSE behavior and limits. Advertise
    unsupported features honestly. Bind AUTH to relay URL/challenge/time and
    re-check read/write authority at historical query and live-delivery boundaries.
-   Test cross-instance routing and authorization isolation.
+   Test cross-instance routing and authorization isolation. Serve NIP-11 metadata
+   with actual limitation units and supported features. Instance-specific relay
+   paths are allowed when they change behavior; bind AUTH to the exact URL.
+   Evaluate NIP-70 author-authenticated protected publication, including its
+   constraint on third-party replication/restore. It supplies no membership read
+   ACL and does not by itself bind a genesis to its authorized sequencer.
 2. Specify a gap-free historical-to-live handoff against a captured journal tip;
    writes during a history query are delivered exactly once or deduplicated by
    identity. Bound history pages, filter count, connection/subscription count and
@@ -449,7 +469,11 @@ trace without secrets.
    [`4cd3cf6`](https://github.com/hoytech/strfry/tree/4cd3cf64850caf47dda46c2a2abbbf3525a64d10)
    or document and test a deliberate update. Provision retention and read/write
    policies, not only a URL. Verify the actual configured image and authentication
-   behavior. If it cannot meet G5's metadata access boundary, stop for a reviewed
+   behavior, including every enabled read/query/reconciliation path. The pinned
+   defaults cap normalized events at 64 KiB and WebSocket payloads at 128 KiB;
+   the proposed 128 KiB event budget needs explicit event and larger frame limits
+   or a reviewed smaller profile. Test exact EVENT framing and encryption expansion.
+   If it cannot meet G5's metadata access boundary, stop for a reviewed
    access gateway or alternate relay; write allowlisting is insufficient.
 5. Define complete retrieval despite relay query limits and equal timestamps:
    use verifiable predecessor/ID backfill or the explicit retained export format.
@@ -577,7 +601,9 @@ trace and screenshots; screenshots alone do not prove determinism.
 4. Demonstrate adding a device, losing one device and losing every live device
    using G2's supported policy. If a shared account key is copied, explicitly
    document that one copy cannot be revoked independently. General delegated
-   device credentials remain deferred. Do not present key copy as MLS history
+   device credentials remain deferred. A supported account/device admission
+   model must pass P1; an unfinished Marmot branch-draft External Commit is not
+   a default. Do not present key copy as MLS history
    recovery. Passkey-unlocked vaults remain optional until PRF/origin/browser
    support and independent restoration are tested.
 5. Remove a participant and exercise the exact admission boundary with live and
@@ -606,7 +632,8 @@ default requires no raw key paste or infrastructure selection.
    recommendation conditional; do not mark cloud-specific cases passed.
 2. Measure append, retry, cold replay, cache rebuild and direct rendering for
    100/1,000/10,000 events with a fixed bounded state. Record hardware, versions,
-   payload/state sizes, latency distributions, storage bytes, network bytes and
+   payload/state sizes, latency distributions including cold wake, actual storage
+   row writes per action/retry, workload-specific cost estimates, storage bytes, network bytes and
    peak memory. Check that append does not duplicate all previous outcomes and
    that slow consumers/large inputs meet declared bounds. Initial measurements
    establish a baseline, not an invented service-level guarantee.

@@ -11,7 +11,10 @@ The [independent design review](2026-09-06-design-review.md) contains eleven
 findings and one direction recommendation. Signed report #50 was accepted as
 planning input by #51. All findings are addressed by explicit decisions, gates
 or scoped deferrals in Plan 001; no implementation gate is claimed to have passed.
-The plan receives its own independent exact-head review in the GitSeq workroom.
+The [supplementary review dispositions](2026-09-06-supplementary-review-dispositions.md)
+assess the delayed report #60, map all N1–N13 findings, and distinguish accepted
+risks from qualified solution suggestions. The plan receives its own independent
+exact-head review in the GitSeq workroom.
 
 ## Execution stages
 
@@ -41,8 +44,9 @@ probe; unrun cloud cases must remain explicitly unverified.
 
 The current task commissions review and planning only. Subsequent implementation
 requires its own work request. Publishing this plan does not adopt unproven
-crypto choices, report runtime work complete or authorize deployment. No findings
-were rejected; later features and their boundaries are listed in the plan.
+crypto choices, report runtime work complete or authorize deployment. All findings are assessed; several supplementary solution suggestions are
+qualified with primary-source evidence. Later features and their boundaries
+are listed in the plan.
 
 GitSeq request #47 tracks this documentation delivery:
 
