@@ -26,13 +26,17 @@ Only update a status after its named commands and evidence checks pass.
 | P3 | Retained definitions and bounded runtime | P2 | TODO |
 | P4 | Durable sequencer and provisioning | P2 | TODO |
 | P5 | Primary relay and independent mirror | P4, G5 | TODO |
-| P6 | Client crypto persistence and replay | P2, P3, P1 adapter | TODO |
+| P6 | Client crypto persistence and replay | P2, P3, P1 adapter; P5 for integration/completion | TODO |
 | P7 | Generic direct UI and unrelated apps | P3, P6 | TODO |
 | P8 | Invitation, membership and recovery flows | P4, P5, P6, P7 | TODO |
 | P9 | Fault matrix, measurements and comparison | P0–P8 | TODO |
 
-P6 can develop pure/store tests before P5, but P5 is required for its integration
-evidence. P9 distinguishes local prototype completion from an actual Cloudflare
+P5 completes with independent signed/encrypted fixture-byte retrieval. P6 can
+develop pure/store tests before P5, but P5 must complete before P6 integration
+proves full mirror-only decryption, retained-definition loading and projection
+reconstruction. P9 composes that end-to-end A5 evidence. This split resolves
+PLAN-01 from the independent plan review; byte retrieval alone is not full replay.
+P9 distinguishes local prototype completion from an actual Cloudflare
 probe; unrun cloud cases must remain explicitly unverified.
 
 The current task commissions review and planning only. Subsequent implementation

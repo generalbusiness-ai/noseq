@@ -199,7 +199,7 @@ P0 toolchain and evidence harness
   -> P2 wire and pure verification
        -> P3 retained definitions and bounded runtime
        -> P4 durable sequencer and provisioning -> P5 relay and mirror
-       -> P6 client crypto and replay (also needs P3)
+       -> P6 client crypto and replay (needs P3; integration/completion after P5)
 P3 + P6 -> P7 generic direct UI
 P4 + P5 + P6 + P7 -> P8 onboarding and recovery flows
 P0..P8 -> P9 fault matrix, resource evidence and comparison
@@ -466,14 +466,17 @@ trace without secrets.
 endpoint and independent pinned relay. Cover AUTH expiry/removal, hibernation,
 write/history races, abusive filters, slow readers, same-timestamp paging,
 prolonged mirror failure and alarm restart. Then disable the sequencer and
-primary, destroy local event/projection caches and recover the promised history,
-definitions and projection from the mirror/export using only declared recovery
-material. Retain the network trace proving no primary fallback.
+primary, empty the relay test harness cache and retrieve retained signed history,
+definition and recovery-artifact bytes from the mirror/export against the known
+fixture identities and complete signed prefix. Retain the network trace proving
+no primary fallback. This is a retained-byte transport proof; full decryption,
+retained-definition loading and projection/outcome reconstruction belong to P6
+integration after P5, with the complete A5 result composed in P9.
 
 ### P6 — Make client replay and encryption persistence crash-safe
 
-**Depends on:** P2/P3 and the P1 adapter contract. P5 is needed for integration,
-not pure/store tests. **Paths:** `src/crypto/{adapter,archive}.ts`,
+**Depends on:** P2/P3 and the P1 adapter contract for pure/store development;
+completed P5 is required for integration and P6 completion. **Paths:** `src/crypto/{adapter,archive}.ts`,
 `src/client/{store,vault,replay,pending}.ts`, `tests/client/`,
 `tests/recovery.test.ts`, `docs/confidentiality-and-recovery.md`.
 
@@ -501,8 +504,13 @@ not pure/store tests. **Paths:** `src/crypto/{adapter,archive}.ts`,
 **Verify:** `npm run test:client` and `npm run test:recovery` cover every atomic
 boundary with two devices and two tabs, forced termination, reordered relay
 input, malformed ciphertext, partial key state, persisted retries and fresh
-rebuild. Same authorized prefix/definition/profile produces identical canonical
-state and outcomes. Neither cache deletion nor migration silently erases the
+rebuild. After P5 completes, disable the primary/sequencer and clear disposable
+event/projection caches. Use only the declared G2 recovery material and P5 mirror
+or export path to decrypt the promised history, load the retained definition, and
+reconstruct canonical state/outcomes at the target frontier. Record no-primary
+network evidence; retained fixture-byte equality alone cannot pass this case.
+Same authorized prefix/definition/profile produces identical canonical state
+and outcomes. Neither cache deletion nor migration silently erases the
 only recovery material. No test substitutes a fixed group key for G1/G2.
 
 ### P7 — Load unrelated applications and render direct projections
@@ -634,8 +642,8 @@ before further execution. Run all commands from the Noseq root.
 | `npm run test:protocol` | Node/browser wire and prefix vectors pass |
 | `npm run test:runtime` / `npm run test:definition` | Pinned runtime and retained closure corpus passes |
 | `npm run test:workers` | Actual Workers storage/concurrency/crash tests pass |
-| `npm run test:relay` / `npm run test:mirror` | Profile, hibernation, backfill and independent retrieval pass |
-| `npm run test:client` / `npm run test:recovery` | Atomic replay, multi-tab and declared recovery policy pass |
+| `npm run test:relay` / `npm run test:mirror` | Profile, hibernation, backfill and independent signed/encrypted fixture-byte retrieval pass; no full projection claim |
+| `npm run test:client` / `npm run test:recovery` | Atomic replay, multi-tab and declared recovery policy pass, including full mirror-only decryption/definition/projection reconstruction after P5 |
 | `npm run test:ui` / `npm run test:dynamic-apps` | Direct projections and unchanged generic host pass |
 | `npm run test:flows` | Named onboarding/removal/loss cases pass |
 | `npm run acceptance` / `npm run verify:evidence` | Complete bound evidence for required acceptance cases |
@@ -655,7 +663,7 @@ additional security gates to their implementing stages.
 | A2: Same prefix, same result | Equal canonical state, outcomes and presentation-buffer bytes on authorized devices; stable prefix extension under crypto convergence | P1–P3, P6–P7 |
 | A3: Delivery is not order | Duplicate/reorder/gap/fork/stale-tip cases; saved retry bytes; no silent rollback | P2, P5–P6 |
 | A4: Durable append | Crash windows, concurrent signing, uniqueness and resumed outbox | P4–P5 |
-| A5: Independent retention | Primary disabled, empty caches, mirror/export provides signed history, definitions and promised recovery artifacts | P5–P6 |
+| A5: Independent retention | P5 proves retained signed/encrypted bytes and identities with primary disabled; P6 reconstructs decrypted history/definition/state/outcomes using G2 material; P9 verifies the combined evidence | P5, P6, P9 |
 | A6: Recovery is explicit | Cache-only rebuild versus new device, one-device loss and all-device loss; archive trust and FS tradeoff named | P1, P6, P8 |
 | A7: Membership has effect | Declared newcomer history, atomic control boundary, removal excludes future epochs | P1, P4, P8 |
 | A8: Onboarding is usable | Fresh invite/identity plus absence, expiry, interruption, recovery; no default raw-key paste | P8 |
