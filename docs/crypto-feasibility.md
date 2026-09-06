@@ -287,6 +287,13 @@ and records both continuations. The Commit's retained parent epoch makes that
 specific replay possible; no secret-tree fields are hand-merged. This behavior
 has its own Node and browser case, including restart and pending application echo.
 
+The fixture allows one pending outbound operation per client. It refuses another
+local generation until that operation is accepted or loses; it still processes
+earlier ordered applications from peers. This local scheduling bound prevents
+generating repeatedly from unchanged accepted sender state. Multiple simultaneous
+local sends and crash-safe reservation of sender generations remain unproved.
+There is no global pause or skipped valid application while a Commit is pending.
+
 The tested default retention policy keeps four epochs and ten generations, with
 a 200-step forward-ratchet bound. Retained accepted/pending snapshots and parent
 epoch material affect forward secrecy. JavaScript strings and snapshots are not

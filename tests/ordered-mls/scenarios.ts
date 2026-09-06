@@ -110,6 +110,7 @@ export const scenarios = {
     const { alice, bob, dave, env } = await group();
     const winner = await alice.stageCommit([add(env.devices.carol!)]);
     const loser = await bob.stageCommit([add(env.devices.carol!)]);
+    await unchanged(alice, () => alice.stageApplication("second local operation"), "one local pending operation");
     const app = await order(alice.last, await dave.stageApplication("application before Commit echo"));
     await alice.receive(app); await bob.receive(app); await dave.receive(app);
     const winning = await order(app, winner); const losing = await order(winning, loser);
