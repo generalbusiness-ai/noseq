@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:07223d255753a9cdf5d70f63b0dcb300b7fa59a4","text":"Merge retired a covered predecessor; the successor is at crypto-preflight.upstream.config.mjs."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0f8457d52ce291d268ee74367685b23abcc964c9","text":"Merge retired a covered predecessor; the successor is at fixtures/crypto/preflight-profile.json."}
