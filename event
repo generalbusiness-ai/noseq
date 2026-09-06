@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ddbfd325bc986613a334afe99cfb8652e7e1fac0","text":"Merge retired a covered predecessor; the successor is at src/worker/router.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:e3cec25d0833670dabb3d83c914fb2b5c18c48dd","text":"Merge retired a covered predecessor; the successor is at fixtures/harness/profile.json."}
