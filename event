@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at wrangler.jsonc","body":{"commit":"3321e70fcf42fbdb89f20db3f425ec3bc431c2d9","path":"wrangler.jsonc"}}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0390b7971eb17a6240778d46fd9d440907b795e9","text":"Merge retired a covered predecessor; the successor is at .github/workflows/check.yml."}
