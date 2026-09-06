@@ -362,9 +362,23 @@ Losing and substituted Welcome bytes are refused by this wrapper. The inviter's
 decrypted acceptance ledger is still trusted by this test join flow; order
 signatures alone do not prove membership validity to a newcomer. The fixture
 does not claim owner-control, fresh-device history or independently authenticated
-archive/admission closure. A removed device retaining its old MLS state fails to
-decrypt the tested new-epoch payload while remaining members decrypt it. Previously
-learned plaintext and historic keys are not revoked.
+archive/admission closure. The removal case delivers the same signed removal
+Commit to all three members. The removed recipient authenticates it and records
+the actual MLS `removedFromGroup` terminal result; unlike active members, it keeps
+its old epoch and does not derive the next epoch's keys. Direct MLS processing
+with that resulting state fails AES-GCM decryption of the future payload while
+remaining members decrypt it. This is distinct from a wrapper's terminal denial.
+A paired non-removal control first shows that a lagging member also cannot decrypt
+new-epoch data, then delivers the ordinary Commit: that retained member advances
+and decrypts successfully. The terminal marker survives serialized reconstruction.
+Previously learned plaintext and historic keys are not revoked.
+
+Independent review P1B-01 identified that the original case only tried untouched
+old state against new-epoch ciphertext, which did not distinguish removal from
+lag. The corrected case includes both actual Commit-delivery paths above and
+records their outcomes in each runtime's trace. The wrapper's active-member
+epoch-advance check remains strict; only the actual removed-member result has
+the explicit terminal path.
 
 ### Evidence, restart limits and next decision
 

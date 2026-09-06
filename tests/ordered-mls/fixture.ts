@@ -163,6 +163,7 @@ export class Client {
     if (existing) { check(existing.entry.id === entry.id, "observed signed fork"); return "duplicate"; }
     if (entry.index > (this.last?.index ?? 0) + 1) return "wait";
     if (entry.previous !== (this.last?.id ?? genesis)) { this.data.fork = true; throw new Error("hash continuity fork"); }
+    check(decodeState(this.data.state).groupActiveState.kind !== "removedFromGroup", "removed-member terminal state");
     const e = entry.envelope; const currentEpoch = this.epoch;
     if (BigInt(e.epoch) > currentEpoch) return "wait"; // No local skip for unavailable epoch state.
     if (BigInt(e.epoch) < currentEpoch) {
@@ -198,7 +199,10 @@ export class Client {
       for (const secret of result.consumed) secret.fill(0);
     }
     const nextEpoch = decodeState(next).groupContext.epoch;
-    check(nextEpoch === currentEpoch + (e.kind === "commit" ? 1n : 0n), "unexpected MLS epoch transition");
+    const removed = decodeState(next).groupActiveState.kind === "removedFromGroup";
+    // Removed recipients authenticate the Commit but do not receive the next epoch's keys.
+    check(removed ? e.kind === "commit" && !own && nextEpoch === currentEpoch
+      : nextEpoch === currentEpoch + (e.kind === "commit" ? 1n : 0n), "unexpected MLS epoch transition");
     let outcome: Outcome | null = null;
     if (e.kind === "application") {
       check(plaintext, "missing plaintext");

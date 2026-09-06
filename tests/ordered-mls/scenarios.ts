@@ -152,20 +152,43 @@ export const scenarios = {
   },
   async "future-exclusion"() {
     const { alice, bob, dave } = await group();
+    // P1B-01: isolate removal from lag using a separate no-removal continuation of the same starting state.
+    const controlAlice = alice.restart(); const controlDave = dave.restart();
+    const controlCommit = await order(controlAlice.last, await controlAlice.stageCommit());
+    await controlAlice.receive(controlCommit);
+    const controlPayload = await controlAlice.stageApplication("retained Dave after normal epoch change");
+    const controlEntry = await order(controlCommit, controlPayload);
+    const controlMessage = mls.decode(mls.mlsMessageDecoder, unhex(controlPayload.bytes));
+    check(controlMessage && controlMessage.wireformat === mls.wireformats.mls_private_message, "private control message required");
+    const lagFailure = await mustFail(() => mls.processMessage({ context: controlDave.env.context, state: decodeState(controlDave.data.state), message: controlMessage }), "OperationError");
+    await controlDave.receive(controlCommit); await controlDave.receive(controlEntry); await controlAlice.receive(controlEntry);
+    check(decodeState(controlDave.data.state).groupActiveState.kind === "active", "retained control member not active");
+    equal(controlDave.data.outcomes, controlAlice.data.outcomes, "ordinary lag did not recover after consuming the Commit");
     const removed = decodeState(dave.data.state).privatePath.leafIndex;
     const oldState = dave.data.state; const oldEpoch = dave.epoch;
     const remove = await alice.stageCommit([{ proposalType: mls.defaultProposalTypes.remove, remove: { removed } }]);
     const entry = await order(alice.last, remove);
-    await alice.receive(entry); await bob.receive(entry);
+    await alice.receive(entry); await bob.receive(entry); await dave.receive(entry);
     check(alice.epoch === oldEpoch + 1n && bob.epoch === alice.epoch, "removal did not rotate real epoch");
+    const terminal = decodeState(dave.data.state);
+    check(terminal.groupActiveState.kind === "removedFromGroup", "removed recipient did not observe actual MLS terminal result");
+    check(dave.epoch === oldEpoch && dave.last!.id === entry.id, "removed recipient must accept removal without acquiring next epoch");
+    check(hex(terminal.keySchedule.senderDataSecret) === hex(decodeState(oldState).keySchedule.senderDataSecret), "unexpected new key material for removed recipient");
+    check(hex(terminal.keySchedule.senderDataSecret) !== hex(decodeState(alice.data.state).keySchedule.senderDataSecret), "removal did not change future sender-data secret");
     const future = await alice.stageApplication("after Dave removal");
     const application = await order(entry, future);
     await alice.receive(application); await bob.receive(application);
     equal(alice.data.outcomes, bob.data.outcomes, "remaining member cannot decrypt future payload");
     const message = mls.decode(mls.mlsMessageDecoder, unhex(future.bytes));
     check(message && message.wireformat === mls.wireformats.mls_private_message, "private future message required");
-    await mustFail(() => mls.processMessage({ context: dave.env.context, state: decodeState(oldState), message }));
-    equal(dave.data.state, oldState, "removed device unexpectedly advanced");
+    const removedState = dave.data.state;
+    // Exercise AEAD using the resulting MLS state directly; a wrapper's policy denial is insufficient.
+    const exclusionFailure = await mustFail(() => mls.processMessage({ context: dave.env.context, state: decodeState(removedState), message }), "OperationError");
+    const restored = dave.restart();
+    await unchanged(restored, () => restored.receive(application), "removed-member terminal state");
+    equal(dave.data.state, removedState, "failed future decrypt changed removed state");
+    trace.push({ kind: "removal-versus-lag", lagFailure, retainedAfterCommit: "active/decrypted", exclusionFailure,
+      removedAfterCommit: terminal.groupActiveState.kind, removedEpoch: String(dave.epoch), remainingEpoch: String(alice.epoch), removalEntry: entry.id });
   },
   async "opaque-failure-halts"() {
     const { alice, bob, dave } = await group();
