@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c5398136c45a409908fb60bfddad8c6a82ca23f6","text":"Merge retired a covered predecessor; the successor is at package-lock.json."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ce7d2462e3042eb0fd6f97f5a15bf0fa8b62e2c7","text":"Merge retired a covered predecessor; the successor is at fixtures/crypto/marmot-v2-vector.json."}
