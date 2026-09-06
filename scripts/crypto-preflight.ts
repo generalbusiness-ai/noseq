@@ -21,7 +21,15 @@ if (process.argv[2] === "--verify") {
   const directory = resolve(`artifacts/crypto-preflight/runs/${runId}`);
   mkdirSync(dirname(directory), { recursive: true }); mkdirSync(directory);
   const attempt = observeAttempt();
-  writeNewRecord(join(directory, "started.json"), { runId, attempt });
+  const observe = (read: () => unknown): unknown => {
+    try { return read(); } catch (error) { return { error: String(error) }; }
+  };
+  const inputs = {
+    profile: observe(profile),
+    profileSha256: observe(() => sha256File("fixtures/crypto/preflight-profile.json")),
+    fixtureSha256: observe(() => sha256File("fixtures/crypto/marmot-v2-vector.json")),
+  };
+  writeNewRecord(join(directory, "started.json"), { runId, attempt, inputs });
   let context: ReturnType<typeof preflightContext> | undefined;
   const suites: SuiteResult[] = [];
   const diagnostics: string[] = [];
@@ -33,6 +41,9 @@ if (process.argv[2] === "--verify") {
     const r = spawnSync(command, args, { cwd, stdio: ["ignore", log, log], timeout: 180_000,
       env: { ...process.env, CI: "true", NOSEQ_PREFLIGHT_RUN: directory } });
     closeSync(log); process.stdout.write(readFileSync(path));
+    writeNewRecord(join(directory, `${step}.command.json`), {
+      command, args, cwd, exitCode: r.status, signal: r.signal, error: r.error?.message ?? null,
+    });
     if (r.error) diagnostics.push(String(r.error));
     return r.status ?? 1;
   }
@@ -83,7 +94,7 @@ if (process.argv[2] === "--verify") {
     console.log(`Observations reproduced. Candidate INCOMPATIBLE; G1–G5 UNPASSED.\nEvidence: ${directory}/evidence.json`);
   } catch (error) {
     diagnostics.push(String(error));
-    writeNewRecord(join(directory, "failure.json"), { runId, attempt, ended: observeAttempt(), context: context ?? null, suites, diagnostics });
+    writeNewRecord(join(directory, "failure.json"), { runId, attempt, inputs, ended: observeAttempt(), context: context ?? null, suites, diagnostics });
     console.error(`Preflight failed; retained ${directory}\n${diagnostics.join("\n")}`); process.exitCode = 1;
   }
 }
