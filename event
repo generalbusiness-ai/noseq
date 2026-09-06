@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:91a8b1d4f1d1ddcd7039287f0859b2f8bcae842f"}
+{"kind":"artifact","text":"P1a development-only compatibility preflight at crypto-preflight.config.ts@35636a0b038f171c4a43d08e881b5b40b5c3cbc6; no production crypto or passed security gate.","body":{"commit":"35636a0b038f171c4a43d08e881b5b40b5c3cbc6","path":"crypto-preflight.config.ts"}}
