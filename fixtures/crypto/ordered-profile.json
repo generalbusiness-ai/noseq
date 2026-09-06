@@ -1,0 +1,62 @@
+{
+  "id": "noseq/ordered-mls-probe@1",
+  "purpose": "bounded API observations; neither production adoption nor G1-G5 acceptance",
+  "api": "ts-mls@2.0.0-rc.14, built public dist/src/index.js from P1a pinned source",
+  "ciphersuite": "MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519",
+  "sourceFiles": {
+    "package.json": "51f40b40cb2454e420170cb9528190412934052acb5fd6f761e603ff224e112e",
+    "LICENSE": "af49a3320ef6c12eba88e583e7d4a48f3ae7430e2e58bdcdfc09c55a24835608",
+    "src/index.ts": "5b390aee1ab44255dc3042d31a6464b1c817c717c52072552008eb5bca21b01d",
+    "src/createCommit.ts": "09d873cdda9899e19f89f85733a58aaae35422a97ef6ab8f59d6d85677817221",
+    "src/createMessage.ts": "fa84b074b400b79125002da8c316deeb57dc69000c9bdd8d4b4293c05d4c162c",
+    "src/processMessages.ts": "fe6faeb35c46ad92d2f552137a85a4bd9ba10d9458644f55290f04ab74a8afbf",
+    "src/clientState.ts": "9ffa4675d0081caf3f470121b3caab73d94a0db8c4ef9d6027d68b459914bab0",
+    "src/authenticationService.ts": "85dc43a1c5fd74f3784648e9b4b06288c1555c9745990d61c0b474c2dc298030",
+    "src/keyRetentionConfig.ts": "f15d132d8f4e53aa6351e2a770a99deee092e5a595e4e3d5c4b0ed96d62afa14",
+    "src/codec/tlsDecoder.ts": "37cb634c94e40977457a19da280b9e2077766e00d2efacade64d8030a59fcf6d",
+    "src/crypto/implementation/default/provider.ts": "f75cdc909ee39775c88041c4d4bebeef22bc6a72db1c1cbcc8ce4bfea7154074",
+    "src/crypto/implementation/default/makeNobleSignatureImpl.ts": "f9a686dd303efc23676d700d5961f5d5ef29c70f08c1a2f6ee6ae1c4c2dd3dfd",
+    "src/crypto/implementation/default/makeHpke.ts": "21a228bfa02fa21dfecd30115ab8cf5c31d6d8b6ac483862631518497099affb"
+  },
+  "fixtures": [
+    "tests/ordered-mls/fixture.ts",
+    "tests/ordered-mls/scenarios.ts"
+  ],
+  "suites": [
+    {
+      "id": "node",
+      "command": "vitest run --config ordered-mls.config.ts",
+      "requiredCases": [
+        "ordered.node.authenticated-leaves",
+        "ordered.node.provisional-state",
+        "ordered.node.competing-self-echo-welcome",
+        "ordered.node.signed-order-boundaries",
+        "ordered.node.pending-interleaving",
+        "ordered.node.restart-boundaries",
+        "ordered.node.future-exclusion",
+        "ordered.node.opaque-failure-halts"
+      ]
+    },
+    {
+      "id": "browser",
+      "command": "playwright test --config ordered-mls.playwright.config.ts",
+      "requiredCases": [
+        "ordered.browser.authenticated-leaves",
+        "ordered.browser.provisional-state",
+        "ordered.browser.competing-self-echo-welcome",
+        "ordered.browser.signed-order-boundaries",
+        "ordered.browser.pending-interleaving",
+        "ordered.browser.restart-boundaries",
+        "ordered.browser.future-exclusion",
+        "ordered.browser.opaque-failure-halts"
+      ]
+    }
+  ],
+  "gates": {
+    "G1": "unpassed",
+    "G2": "unpassed",
+    "G3": "unpassed",
+    "G4": "unpassed",
+    "G5": "unpassed"
+  }
+}
