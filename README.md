@@ -15,11 +15,17 @@ or authorize implementation. Start with the
 [architecture note](notes/2026-09-06-noseq-architecture.md) and
 [notes index](notes/README.md).
 
+The [prototype implementation plan](plans/001-confidential-application-prototype.md)
+maps the [independent design review](plans/2026-09-06-design-review.md) to ordered
+work packages and proposed verification gates. The [plans index](plans/README.md)
+tracks implementation stages; no runtime work is complete.
+
 ## Repository workroom
 
 [AGENTS.md](AGENTS.md) requires GitSeq requests to track repository work.
 GitSeq is the development workroom; it is not a Noseq runtime dependency.
-The root `.gitseq` watches `notes/**.md` for explicit GitSeq publication.
+The root `.gitseq` watches `notes/**.md` and `plans/**.md` for explicit GitSeq
+publication.
 
 The workroom genesis is:
 
