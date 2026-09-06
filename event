@@ -1,1 +1,1 @@
-{"kind":"roster","text":"noseq-codex begins the workroom","body":{"actor":"26e87ab14ebd2695c1f955a69afa42921dc8cdf037ff0e991a956deb0d320433","kind":"human","name":"noseq-codex","role":"operator"}}
+{"kind":"roster","text":"Correct the bootstrap default: noseq-codex is the Codex agent operating this workroom, not a human principal.","body":{"actor":"26e87ab14ebd2695c1f955a69afa42921dc8cdf037ff0e991a956deb0d320433","kind":"agent","name":"noseq-codex","role":"participant"}}
