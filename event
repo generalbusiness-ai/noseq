@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:129362be4a9b2fcdc8308e65aec342d66a73a804","text":"Merge retired a covered predecessor; the successor is at tsconfig.webworker.json."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:15cd47f0d46168c2e95c8f7ad54ca32bf7de8ab9","text":"Merge retired a covered predecessor; the successor is at .node-version."}
