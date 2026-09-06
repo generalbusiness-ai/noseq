@@ -33,9 +33,12 @@ opens the generic Vite host on loopback for local development.
 
 The CI workflow installs the same pins on Ubuntu 24.04, runs only these P0 gates,
 and retains harness output even after failure. Its actions are pinned by commit.
-The initial local validation target is macOS arm64; CI configuration is not a
-claim of a completed hosted CI run. Record Linux or deployed results when those
-runs actually occur.
+P0 passed both macOS arm64 validation and a real Ubuntu run at source
+`3321e70fcf42fbdb89f20db3f425ec3bc431c2d9`: [GitHub run 34064545219](https://github.com/generalbusiness-ai/noseq/actions/runs/34064545219).
+That hosted run installed, typechecked, passed all 12 Node/workerd/Chromium cases
+and built both targets. Its retained evidence UUID is
+`0de623bf-133f-4e75-ae3b-c8fcfffbf952`. This establishes P0 hosted execution;
+it is not a P1 crypto result or a deployed application.
 
 ## Pinned surfaces
 
@@ -135,3 +138,23 @@ Calling `verify:evidence` without a P0 record also fails: the P9 aggregate gate
 is not implemented. P0 success cannot unlock implementation beyond the plan's
 P1 feasibility gates. Pin crypto, Nostr, schema, JSONata and three.js dependencies
 and document their selected APIs only when their owning stage introduces them.
+
+
+## P1a development probes
+
+`probe:crypto-preflight` and `verify:crypto-preflight` exercise the isolated
+[compatibility investigation](crypto-feasibility.md). They add exact dev-only
+`pnpm` 10.34.5 and `@noble/curves` 2.2.0 dependencies. The candidate and MLS
+submodule are fetched at exact Git revisions into ignored output storage; the
+upstream frozen pnpm lock controls their separate dependencies. The application
+host and Worker import none of them. The preflight profile records those source
+and runtime identities, including all selected upstream fixture hashes.
+
+The probe builds the candidate's declared public exports and runs its unmodified
+Vitest 3.2.4 corpus with the native configuration loader. Noseq's additional
+preflight tests use the existing Vitest 4.1.11 pin and are included in `check` by
+`tsconfig.crypto-preflight.json`. Neither runner weakens the P0 required profile.
+Successful preflight evidence retains an explicit incompatible-candidate verdict
+and five unpassed gates; `test:crypto-feasibility` and `gate:protocol` still fail.
+This is a bounded Node investigation, with no assertion of browser/Workers crypto,
+current Marmot interoperability or an adopted encryption stack.

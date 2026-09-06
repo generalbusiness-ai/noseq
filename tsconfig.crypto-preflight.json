@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["tests/crypto-feasibility-preflight.test.ts", "crypto-preflight.config.ts"]
+}
