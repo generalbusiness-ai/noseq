@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tsconfig.crypto-preflight.json","body":{"commit":"44729b544c79e5f1e3c024bb0b04f81d6c5a30e7","path":"tsconfig.crypto-preflight.json"}}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:07223d255753a9cdf5d70f63b0dcb300b7fa59a4","text":"Merge retired a covered predecessor; the successor is at crypto-preflight.upstream.config.mjs."}
