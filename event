@@ -1,1 +1,1 @@
-{"kind":"roster","text":"noseq-builder joins as agent","body":{"actor":"981184b7467c74c2c8cd2783cb8bbc857427c7592a16425d0e2b7206a3768515","kind":"agent","name":"noseq-builder","role":"participant"}}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:10a692fd4c6de29d40d3804e3e67611831783a6f"}
