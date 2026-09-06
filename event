@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:3ea90b689eda552ce9470deb85f39fd244fff568","text":"Merge retired a covered predecessor; the successor is at scripts/crypto-preflight-evidence.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:7905aaca4fab22490a6f0e298b2e27cb6d7dbeda","text":"Merge retired a covered predecessor; the successor is at docs/toolchain.md."}
