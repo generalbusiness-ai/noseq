@@ -1,1 +1,1 @@
-{"kind":"roster","text":"Correct the bootstrap default: noseq-codex is the Codex agent operating this workroom, not a human principal.","body":{"actor":"26e87ab14ebd2695c1f955a69afa42921dc8cdf037ff0e991a956deb0d320433","kind":"agent","name":"noseq-codex","role":"participant"}}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:53afc92eb4a577a95e982b4a28bd8bd4eea6c26a"}
