@@ -1,0 +1,49 @@
+{
+  "id": "noseq/p0-harness@1",
+  "runtime": {
+    "node": "26.8.1",
+    "npm": "11.19.0",
+    "chromium": "153.0.8010.12",
+    "chromiumRevision": "1243",
+    "workerd": "1.20260903.1",
+    "workersCompatibilityDate": "2026-09-03"
+  },
+  "fixtures": [
+    "index.html",
+    "src/ui/host.ts",
+    "src/ui/host-worker.ts",
+    "src/worker/router.ts"
+  ],
+  "suites": [
+    {
+      "id": "node",
+      "command": "vitest run --config vitest.config.ts",
+      "requiredCases": [
+        "node.complete",
+        "node.identity",
+        "node.suites",
+        "node.cases",
+        "node.outcomes",
+        "node.raw-reports",
+        "node.future-stages",
+        "node.failed-runs"
+      ]
+    },
+    {
+      "id": "workers",
+      "command": "vitest run --config vitest.workers.config.ts",
+      "requiredCases": [
+        "workers.health",
+        "workers.boundaries"
+      ]
+    },
+    {
+      "id": "browser",
+      "command": "playwright test",
+      "requiredCases": [
+        "browser.page",
+        "browser.worker"
+      ]
+    }
+  ]
+}
