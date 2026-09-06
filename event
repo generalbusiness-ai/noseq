@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:1f0c59b5b43042cf0fbdc4848533d351a06ca4e4","text":"Merge retired a covered predecessor; the successor is at docs/crypto-feasibility.md."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:2964f0c62d8fcc68e40727ee0a9ab9091ef3f041","text":"Merge retired a covered predecessor; the successor is at tsconfig.crypto-preflight.json."}
