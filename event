@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:6032716a8718ead72fd6830e9f0f8ffb346c984b"}
+{"kind":"artifact","text":"Publish final plan-review candidate at .gitseq for request #47. The complete candidate includes PLAN-01's corrected stage evidence and supplementary N1-N13 dispositions with explicit source qualifications. This is documentation delivery only.","body":{"commit":"e106f95af01a6c6014bdea243dcebdec56fb50c5","path":".gitseq"}}
