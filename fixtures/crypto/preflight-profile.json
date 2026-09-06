@@ -1,0 +1,103 @@
+{
+  "id": "noseq/crypto-preflight@1",
+  "purpose": "reproduce observations; not P1 or G1-G5 acceptance",
+  "pnpm": "10.34.5",
+  "sources": {
+    "marmot-protocol": {
+      "url": "https://github.com/marmot-protocol/marmot.git",
+      "commit": "4a2bc65f8db5866cec3b2a127dedb37818eaf207"
+    },
+    "marmot-ts": {
+      "url": "https://github.com/marmot-protocol/marmot-ts.git",
+      "commit": "2f60dbb27d284f617ad873ccda568c0f2f07aa79"
+    },
+    "ts-mls": {
+      "url": "https://github.com/hzrd149/ts-mls.git",
+      "commit": "2ca5c43b77241245ef41a5dd834f151674877c2d"
+    }
+  },
+  "upstreamLockSha256": "9cf5049960026b335885651f74002fb527785cad64e5f1595ab11a3a7d424fd5",
+  "upstreamPackages": {
+    "@hpke/core": "1.9.0",
+    "@noble/ciphers": "2.2.0",
+    "@noble/curves": "2.2.0",
+    "@noble/hashes": "2.2.0",
+    "@scure/base": "2.2.0",
+    "vitest": "3.2.4",
+    "typescript": "6.0.3"
+  },
+  "sourceFiles": {
+    "marmot-ts/src/__tests__/integration/convergence-status.test.ts": "5296a5fb36eefe534a5afd2860266f2387b5c66f59a0ab8a8bf8f27d9ae15d99",
+    "marmot-ts/src/__tests__/integration/ingest-commit-race.test.ts": "070f502d06d92fffda605e250bd851212e9fc948c6fecf11acbb90e42f350e33",
+    "marmot-ts/src/__tests__/integration/rewind-persistence.test.ts": "af6b8dd5a9e385bdca1ee24e4242b0caf51eaff7dce092ec727a536c772d8ee8",
+    "marmot-ts/src/core/__tests__/account-identity-proof.test.ts": "78bff30116f1d0bd6dc1429330f1ccd4a39fe0aeeaa46924eca28f30ef4469f3",
+    "marmot-ts/src/core/account-identity-proof.ts": "a58b48272dbc31c7e5afdbed4eac9c7f1b1216b84a117c4e45ee7459d2c23ebe",
+    "marmot-ts/src/core/index.ts": "570bc2c42eeee6b45bdaa2e8c12839fb67495a515882c9e64e19a4089c0ffd22",
+    "marmot-ts/package.json": "0aea5a33e2f499a2829721ae9d24872fc427dbf9c39a5a3474c3a6114ef9ec12",
+    "marmot-ts/.gitmodules": "ef242e012a2fc7b58598b7ca90d1944a8dcee20c4d868aee183569bbc9b26b9c",
+    "marmot-ts/ts-mls/package.json": "51f40b40cb2454e420170cb9528190412934052acb5fd6f761e603ff224e112e",
+    "marmot-ts/ts-mls/src/crypto/implementation/default/provider.ts": "f75cdc909ee39775c88041c4d4bebeef22bc6a72db1c1cbcc8ce4bfea7154074",
+    "marmot-protocol/app-components/account-identity-proof-v2.md": "7298c599e9c3cfe4563ea1aeac3e0609ebb00df24f2932e986f7208490ded60d",
+    "marmot-protocol/foundation/authorization-proofs.md": "3832f62fa618964b780a045f28d1a25f4288429a2aa2349466044f16be955af5",
+    "marmot-protocol/foundation/identity.md": "3ca326a131be7a791c681601503bf4e6a06aec56ea7d2dbd71853d42f5730205",
+    "marmot-protocol/protocol-core/convergence.md": "b62ff275b05cc77539edb8ab72842e37990e24d435838188e2129cae09a91a24",
+    "marmot-protocol/protocol-core/inbound-processing.md": "5b3b3219e7be1bf8a3773085bc786369b71fcda904d74c44fdd3bec165d10cf4",
+    "marmot-protocol/transports/nostr.md": "600d505ec6814a593ce7ed3540ec91ea73723cd76332e9e91ec61cce90d9b932",
+    "marmot-protocol/foundation/key-packages.md": "fb120ab426499d249ecd8f5cc1edb5823f963ff38e6578b532311326523a9151",
+    "marmot-protocol/features/multi-device.md": "1a846f5cd8ce5cef0955d4c030d7284fc03da94f47e0a93e850523d1be1c6f8b"
+  },
+  "suites": [
+    {
+      "id": "upstream",
+      "command": "pinned upstream Vitest 3.2.4; native config; four unmodified files",
+      "requiredCases": [
+        "convergence status (B5, increment 2) starts Settled, goes Syncing on a commit, then Settled after the quiescence window",
+        "convergence status (B5, increment 2) queues an outbound send while Syncing and drains it once the window settles (Inc 3)",
+        "MarmotGroup.ingest() commit race ordering (MIP-03) orders same-epoch commits by content-derived commit_digest, ignoring transport fields",
+        "MarmotGroup.ingest() commit race ordering (MIP-03) applies exactly one commit for an epoch (convergence picks the winner), even if events arrive reversed",
+        "MarmotGroup.ingest() commit race ordering (MIP-03) recovers from a cross-ingest fork by rewinding to retained state and applying the canonical commit",
+        "MarmotGroup.ingest() commit race ordering (MIP-03) reports an app payload delivered on an abandoned branch as invalidated on rewind (M7)",
+        "MarmotGroup.ingest() commit race ordering (MIP-03) converges onto a deeper competing branch whose child commit is encrypted under an unreached epoch",
+        "MarmotGroup.ingest() commit race ordering (MIP-03) converges onto a witnessed branch via app-payload witness quorum, overriding the lower-digest competitor",
+        "MarmotGroup.ingest() commit race ordering (MIP-03) persists application message epoch advancement (forward secrecy)",
+        "MarmotGroup.ingest() commit race ordering (MIP-03) processes proposals before commits (proposal/commit integration)",
+        "rewind history persistence across restart rewinds to the canonical branch after a restart when the rewind store is persisted",
+        "rewind history persistence across restart cannot rewind after a restart without a persisted rewind store (the gap this fixes)",
+        "account identity proof \u2014 signing digest uses Ed25519 (0x0807) for ciphersuite 1",
+        "account identity proof \u2014 signing digest matches the canonical message layout from the Rust reference",
+        "account identity proof \u2014 published spec test vector derives the published x-only account identity from the test secret key",
+        "account identity proof \u2014 published spec test vector produces the published signing digest",
+        "account identity proof \u2014 published spec test vector verifies the published BIP-340 signature over the digest",
+        "account identity proof \u2014 sign / verify produces a BIP-340 signature that verifies over the digest",
+        "account identity proof \u2014 codec round-trips through encode/decode",
+        "account identity proof \u2014 codec encodes to the fixed wire length (1+2+2+32+2+32+64)",
+        "account identity proof \u2014 codec rejects trailing bytes on decode",
+        "account identity proof \u2014 leaf verification verifies a well-formed leaf proof",
+        "account identity proof \u2014 leaf verification rejects a leaf missing the proof extension",
+        "account identity proof \u2014 leaf verification rejects when the leaf signature key does not match the proof",
+        "account identity proof \u2014 leaf verification rejects a tampered signature",
+        "account identity proof \u2014 leaf verification exposes the spec extension type"
+      ]
+    },
+    {
+      "id": "preflight",
+      "command": "vitest run --config crypto-preflight.config.ts",
+      "requiredCases": [
+        "preflight.v2-vector",
+        "preflight.v2-tamper",
+        "preflight.v1-incompatible",
+        "preflight.public-api",
+        "preflight.source-contract",
+        "preflight.evidence-rejection",
+        "preflight.gates-closed"
+      ]
+    }
+  ],
+  "gates": {
+    "G1": "unpassed",
+    "G2": "unpassed",
+    "G3": "unpassed",
+    "G4": "unpassed",
+    "G5": "unpassed"
+  }
+}

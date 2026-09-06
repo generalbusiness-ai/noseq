@@ -9,7 +9,7 @@
   },
   "packageManager": "npm@11.19.0",
   "scripts": {
-    "check": "node scripts/check-toolchain.ts && node -e \"require('node:fs').mkdirSync('.generated', {recursive:true})\" && wrangler types --env-interface WorkerEnv .generated/worker-configuration.d.ts && tsc -p tsconfig.json && tsc -p tsconfig.browser.json && tsc -p tsconfig.worker.json && tsc -p tsconfig.webworker.json",
+    "check": "node scripts/check-toolchain.ts && node -e \"require('node:fs').mkdirSync('.generated', {recursive:true})\" && wrangler types --env-interface WorkerEnv .generated/worker-configuration.d.ts && tsc -p tsconfig.json && tsc -p tsconfig.browser.json && tsc -p tsconfig.worker.json && tsc -p tsconfig.webworker.json && tsc -p tsconfig.crypto-preflight.json",
     "build": "node scripts/check-toolchain.ts && vite build && wrangler deploy --dry-run --outdir dist/worker",
     "dev": "vite --host 127.0.0.1",
     "browser:install": "playwright install chromium",
@@ -29,12 +29,16 @@
     "test:dynamic-apps": "node scripts/not-implemented.ts test:dynamic-apps",
     "test:flows": "node scripts/not-implemented.ts test:flows",
     "acceptance": "node scripts/not-implemented.ts acceptance",
-    "benchmark": "node scripts/not-implemented.ts benchmark"
+    "benchmark": "node scripts/not-implemented.ts benchmark",
+    "probe:crypto-preflight": "node scripts/crypto-preflight.ts",
+    "verify:crypto-preflight": "node scripts/crypto-preflight.ts --verify"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "1.1.4",
+    "@noble/curves": "2.2.0",
     "@playwright/test": "1.63.0",
     "@types/node": "26.4.1",
+    "pnpm": "10.34.5",
     "typescript": "7.0.2",
     "vite": "8.2.2",
     "vitest": "4.1.11",
