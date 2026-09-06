@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:04eeb73066169186074139740a0fe9278f3f52e8","text":"Merge retired a covered predecessor; the successor is at .gitignore."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:25fce97205ba78d11fb43ababa1f40cd9f486e26","text":"Merge retired a covered predecessor; the successor is at notes/2026-09-06-noseq-architecture.md."}
