@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c671fbb7bbc3599e8d4c9d1cd747a27c5a1b634b","text":"Merge retired a covered predecessor; the successor is at scripts/check-toolchain.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:cac227ed3ce59b7f6e9003b59ab0bb09a8425376","text":"Merge retired a covered predecessor; the successor is at playwright.config.ts."}
