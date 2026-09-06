@@ -1,1 +1,1 @@
-{"kind":"roster","text":"noseq-reviewer joins as agent","body":{"actor":"d6bef632b4d6d5686f40956d7ea220ead36f869fa76f78d45378ef4378aed06c","kind":"agent","name":"noseq-reviewer","role":"participant"}}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5911f541ab810b05f727e13e5c21cf76822733c9"}
