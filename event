@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:d0ff3bd886ca018c7051cec312cbf82471f2633c","text":"Merge retired a covered predecessor; the successor is at src/ui/host-worker.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:dd2bbc462ebf223473de03cc2b9d1af0cd86ab08","text":"Merge retired a covered predecessor; the successor is at .gitignore."}
