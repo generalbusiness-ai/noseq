@@ -161,7 +161,10 @@ prefix; it would not finalize from direct relay arrival or a local send.
 Competing/stale controls would receive an agreed disposition under the new
 profile. Pending local commits and their Welcome messages must be retained or
 aborted consistently when the sender loses a race; they cannot become canonical
-just because a relay acknowledged publication.
+just because a relay acknowledged publication. The current eager `MarmotGroup`
+API is not such an adapter unchanged: the next probe must demonstrate explicit
+provisional state at a suitable MLS API boundary, including sender self-echo and
+losing-commit cleanup before choosing that API for production.
 
 Wire and interoperability consequences must be explicit: select RFC MLS version,
 ciphersuite, credential/author-proof binding, capabilities, KeyPackage discovery
