@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tests/crypto-feasibility-preflight.test.ts","body":{"commit":"44729b544c79e5f1e3c024bb0b04f81d6c5a30e7","path":"tests/crypto-feasibility-preflight.test.ts"}}
+{"kind":"artifact","text":"Merge published the current artifact at tsconfig.crypto-preflight.json","body":{"commit":"44729b544c79e5f1e3c024bb0b04f81d6c5a30e7","path":"tsconfig.crypto-preflight.json"}}
