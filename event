@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"P0 baseline implementation at wrangler.jsonc@2b3e7327d5d3573d776f3b066801dfd7d5a65982.","body":{"commit":"2b3e7327d5d3573d776f3b066801dfd7d5a65982","path":"wrangler.jsonc"}}
+{"kind":"artifact","text":"P0 toolchain, execution targets, evidence and honest future-stage contracts at docs/toolchain.md@2b3e7327d5d3573d776f3b066801dfd7d5a65982. This describes the exact implementation artifacts in its bases; it claims neither hosted CI nor deployed/crypto feasibility.","body":{"commit":"2b3e7327d5d3573d776f3b066801dfd7d5a65982","path":"docs/toolchain.md"}}
