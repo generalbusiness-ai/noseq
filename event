@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0390b7971eb17a6240778d46fd9d440907b795e9","text":"Merge retired a covered predecessor; the successor is at .github/workflows/check.yml."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:07e5192f9d18a8a581e783497e354214c2ae32da","text":"Merge retired a covered predecessor; the successor is at package-lock.json."}
