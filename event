@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tests/segmented-recovery/wire.ts","body":{"commit":"499dc13e3ef05f8a30f844df225dc17ce4162297","path":"tests/segmented-recovery/wire.ts"}}
+{"kind":"artifact","text":"Merge published the current artifact at tsconfig.segmented-recovery.json","body":{"commit":"499dc13e3ef05f8a30f844df225dc17ce4162297","path":"tsconfig.segmented-recovery.json"}}
