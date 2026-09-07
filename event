@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:e9d59480c110ab0bd73d3b0c32a552815dcc98c5","text":"Merge retired a covered predecessor; the successor is at scripts/decision-validator.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:efc54b77faaa6a97a72c4418b23b2e55d8b01c74","text":"Merge retired a covered predecessor; the successor is at fixtures/crypto/closure/gitseq-build.json."}
