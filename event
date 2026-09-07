@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:fce37846c0dd2d00fafe55535f4b318e32d31d14","text":"Merge retired a covered predecessor; the successor is at docs/relay-profile.md."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:fe470a95a580006aacf6dae80754e36647f56761","text":"Merge retired a covered predecessor; the successor is at tests/segmented-recovery/capacity.ts."}
