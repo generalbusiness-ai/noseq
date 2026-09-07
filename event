@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at plans/README.md","body":{"commit":"dac6e8a76a95b730fea6b7781a4c73047a6293d5","path":"plans/README.md"}}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0f3234d7fb61d93781adcaee7c2fb4d76e49faef","text":"Merge retired a covered predecessor; the successor is at notes/2026-09-06-noseq-architecture.md."}
