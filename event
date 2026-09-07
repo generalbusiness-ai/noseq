@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:d4db91b931e0bbc912187ada9693b19deb18ed9b","text":"Merge retired a covered predecessor; the successor is at tests/protocol-closure/staged.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:d7ffd9a996b740fd348036ab2ad464b1e643d57f","text":"Merge retired a covered predecessor; the successor is at tests/protocol-closure/churn.ts."}
