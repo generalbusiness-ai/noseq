@@ -1,8 +1,8 @@
 ---
 date: 2026-09-06
-status: draft for a comparative prototype; implementation not started
+status: draft architecture; separate P0 and P1 feasibility work landed; full gates unpassed
 origin: discussion of Nostr as a confidential substrate for gitseq-style applications
-source_reviewed: 2026-09-06
+source_reviewed: 2026-09-07
 tracking: "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0ddf7cdd0daa7e987a036e2cb85201ccce14f9a7"
 workroom_genesis: 77aeeeb3fa42aeb6babdf961f6397ba73fada68b
 ---
@@ -23,8 +23,10 @@ and encryption, folds events and renders results.
 
 This note consolidates the design discussion and research. It distinguishes
 proposed contracts from candidate implementations and open questions. It does
-not describe shipped software or constitute an implementation plan. The next
-step is a bounded feasibility and protocol spike.
+not describe a shipped application. The [conditional implementation plan](../plans/001-confidential-application-prototype.md)
+records P0 completion and separately commissioned P1 investigations. G1–G5
+remain unpassed. The [final Atseq assessment](2026-09-07-atseq-final-assessment.md)
+updates this draft with completed Atseq evidence and current Noseq boundaries.
 
 ## 1. Intent and lineage
 
@@ -33,17 +35,22 @@ schemas, bounded JSONata behavior, retained views, signed intentions and a
 separate sequencing authority. Its public retained substrate does not meet all
 the confidentiality requirements motivating noseq.
 
-GitSeq and atseq are architectural precursors. They establish useful
+GitSeq, Tailapps and atseq are architectural precursors. They establish useful
 distinctions between ordering and interpretation, publication and activation,
 retained inputs and disposable projections. They impose no wire compatibility
 or runtime dependency on noseq. GitSeq requests track repository work only.
 
-The source review used atseq at
+The initial source review used atseq at
 [6477b73](https://github.com/generalbusiness-ai/atseq/tree/6477b73f3be27880fd592f7015b4c7dcb1eda74a)
 and gitseq at
 [33f6995](https://github.com/generalbusiness-ai/gitseq/tree/33f69956167115d7cc3235b6b1864ed904f2802a).
 See their [atseq architecture](https://github.com/generalbusiness-ai/atseq/blob/6477b73f3be27880fd592f7015b4c7dcb1eda74a/notes/2026-09-06-atseq-architecture.md)
 and [GitSeq design](https://github.com/generalbusiness-ai/gitseq/blob/33f69956167115d7cc3235b6b1864ed904f2802a/notes/2026-08-05-gitseq-design.md).
+
+The current reuse baseline is Atseq [e5856bd](https://github.com/generalbusiness-ai/atseq/tree/e5856bd9c538b35c2dce4e87d51800f1eaa090f9),
+including independently landed S5/S6 corrections. The dated assessment preserves
+exact evidence, measured prefix costs and limits; it does not transfer Atseq wire
+contracts or establish Noseq confidentiality.
 
 The experiment is worthwhile if an app definition can inherit confidential
 collaboration, durable replay and direct rendering from a small shared host.
@@ -105,7 +112,12 @@ The manifest roots a complete immutable dependency closure. Pin the runtime
 profile and every source dependency by content identity. Discovery of a current
 manifest cannot silently replace the definition used to interpret old events.
 Retain old definitions across activation boundaries. Definitions and assets
-may themselves be confidential and require encrypted distribution.
+may themselves be confidential and require encrypted distribution. Every reader
+must judge the same exact authenticated closure, isolated from extra local files.
+Definition-admission caps, encrypted chunk/frame caps and aggregate evidence
+transport caps are separate. Missing/corrupt/untransportable evidence pauses
+verification; a transport cap cannot fabricate a semantic invalidity. Retention
+must cover referenced assets and the recovery material for the promised interval.
 
 Lexicon can remain a locally bundled validator for the first comparison; it
 does not require a PDS merely to validate supplied schemas. JSON Schema is also
@@ -121,7 +133,11 @@ through explicit controls; agents use explicit typed adapter calls.
 Definition activation and state migration need their own rules. The intended
 model is an authorized activation at an exact log boundary, interpreted under
 the preceding authority. A prototype may initially keep the definition fixed.
-It must declare how stale-definition submissions behave before adding updates.
+Plan 001 fixes the definition for v0 and tests refusal of activation/upgrades.
+Future activation must be governed by the preceding authority at N, commit
+definition/state/frontier atomically, and affect N+1. Staging or preview has no
+canonical effect. Old queued bytes stay unchanged; replacement is explicit new
+work. The completed Atseq activation does not authorize this extension in Noseq.
 
 ## 4. Fold results can be the interface
 
@@ -151,6 +167,23 @@ be converted into `Float32Array` by the presentation adapter. If the fold itself
 must emit typed buffers, specify another runtime profile: rounding, byte order,
 buffer layout, non-finite values, limits and replay comparison. This is a
 required design choice, not a reason to make every projection JSON or SQL.
+
+The direct-document hypothesis is a fold-maintained populated UI, SVG-compatible
+document or scene: stable semantic object IDs, already-bound values, retained
+assets and declarative action bindings. A separate dataset/query is optional.
+P7 must test an identity-bound document after creation, updates, child reordering
+and restart. Reuse a bounded inert SVG vocabulary and trusted Three.js adapters;
+glTF is a candidate retained asset format, not a required new importer. IDs must
+come from signed input or deterministic derivation, not runtime-generated object
+IDs. Duplicate/dangling targets and missing assets need explicit validation.
+
+Camera movement, hover, animation clocks and GPU pixels remain local presentation.
+A shared movement requires an explicit signed action with quantized coordinates.
+Rendering and loading never sign; an action binding confers no permission. Compare
+canonical documents and pinned buffer conversion bytes, not screenshots. Retain
+the integer fold profile and state cap; native typed-buffer folds remain deferred.
+Atseq S6 queries folded state to export SVG and has not validated this direct
+document or 3D hypothesis.
 
 Projection state, interpretation outcomes and frontier advance atomically.
 Every result identifies its definition and exact verified prefix. Missing
@@ -206,7 +239,10 @@ relevant even when content is encrypted.
 [NIP-59](https://github.com/nostr-protocol/nips/blob/master/59.md)
 
 Marmot, with MLS group encryption over Nostr, is the main group-security
-candidate. Evaluate it before designing new group cryptography. Pin a compatible
+candidate in the initial design. P1a has since shown the pinned protocol/library
+pair incompatible, and P1b–P1d investigate a distinct ordered MLS binding; see
+[crypto feasibility](../docs/crypto-feasibility.md). No production profile is
+adopted. Evaluate existing implementations before new group cryptography. Pin a compatible
 protocol/library pair and test signer support, persistence, admission, removal
 and recovery. An advertised messaging capability is not evidence that the
 application replay contract works. [Marmot/MDK](https://github.com/marmot-protocol/mdk),
@@ -225,6 +261,13 @@ protocol. It cannot withdraw data already decrypted. Distinct visibility within
 an application may require separate encrypted streams or groups. UI filtering
 does not enforce that boundary. A server-side folder or agent processing
 plaintext is an authorized recipient and needs explicitly granted access.
+
+Archive import verifies an existing trusted owner/genesis and prior checkpoint
+before any pin, vault, crypto state, outbox or app selection is changed. A
+self-consistent file does not authenticate its owner or latest head. First import
+requires the declared external trust input; failed or interrupted import preserves
+existing state. Retaining an owner-attested historical control interval must be
+distinguished from independently replaying all MLS controls.
 
 The first opaque sequencer may know submitter public keys, instance identifiers,
 payload sizes and ordering metadata. Hiding submitter identity is a separate
@@ -279,6 +322,15 @@ atomically published beside every entry: signed tips can be discovered, and
 clients fetch missing predecessors before advancing. Knowing whether an
 observed tip is current remains a separate freshness question. Publication to
 ordinary relays supplies no cross-relay transaction or automatic replication.
+
+Atseq measured 18.66 s median confirmed append, 6.59 s one-entry catch-up and
+15.42 s browser replay/transfer at 10,000 entries in one local run despite tiny
+state. These are not Noseq/Cloudflare results. Separate serving, verification,
+decryption, fold, storage and rendering costs. Preserve cold replay as an oracle
+when testing verified-prefix plus authenticated-extension reuse. Noseq P1d already
+explores segmented history with small work counters; full-scale and production
+storage evidence remain P4–P9. Local watchdog failures pause without semantic
+advancement, and long replay requires its own measured operational budget.
 
 ## 8. Infrastructure: Durable Objects and relays
 
