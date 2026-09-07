@@ -35,7 +35,9 @@
     "probe:ordered-mls": "node scripts/ordered-mls.ts",
     "verify:ordered-mls": "node scripts/ordered-mls.ts --verify",
     "probe:protocol-feasibility": "node scripts/protocol-feasibility.ts",
-    "verify:protocol-feasibility": "node scripts/protocol-feasibility.ts --verify"
+    "verify:protocol-feasibility": "node scripts/protocol-feasibility.ts --verify",
+    "probe:segmented-recovery": "node scripts/segmented-recovery.ts",
+    "verify:segmented-recovery": "node scripts/segmented-recovery.ts --verify"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "1.1.4",

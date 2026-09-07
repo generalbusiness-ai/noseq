@@ -1,7 +1,7 @@
 ---
 title: Segmented full-history recovery candidate
 date: 2026-09-07
-status: P1d contract; implementation and independent review pending; no adoption
+status: P1d executable feasibility proposal; independent review tracked in GitSeq; no adoption
 ---
 
 This is the separately commissioned successor recovery experiment to the small
@@ -113,7 +113,9 @@ introduced, and the MLS deletion assumptions are not strengthened.
 Owner restore first verifies the complete shared history, definition and all
 checkpoint/grant/vault bindings. Only then install accepted MLS state with
 matching epoch, group, roster and own leaf/private binding. Rebuild historical
-logical/outcome indexes from verified records. Pending operations are refused
+logical/outcome indexes from verified records. The recovered grant and compact
+descriptor index also resume the sealer at that exact checkpoint, reusing the
+immutable definition/interval keys and generating only new suffix keys. Pending operations are refused
 at export; their production crash recovery remains P6.
 
 ## Bounds and work
@@ -195,3 +197,139 @@ and incomplete sealing/transfer. No raw-backend shortcut or EOSE is client
 recovery proof. Existing public COUNT/NEG/HLL/admin denial and backend isolation
 remain required. All acceptance and adoption conclusions await actual evidence
 and independent exact-head review.
+
+## Executable package and measured scope
+
+`npm run probe:segmented-recovery` requires the full 102-case P0/P1a/P1b/P1c
+chain, then six new Node cases, the same six Chromium cases and one actual
+native gateway composition case: 115 required tests plus the preserved native
+size/COUNT probe. `npm run verify:segmented-recovery -- <evidence.json>` checks
+its recursive prerequisites, clean commit/tree/lock/profile/source/provider and
+runtime identities, signed root/definition/order/checkpoint/frontier inputs,
+raw reports, browser bundle and native trace/config/state artifacts. Every run
+uses a fresh UUID; failed/skipped/missing cases cannot produce an accepted
+record. An accepted record is an observation result, never an adoption token.
+
+The 132-entry case spans three intervals, retains a refusal and an ordered
+stale entry, repeats an exact action across the first boundary, uses multiple
+real epoch changes and authentic newcomer Welcome, then restores an owner using
+only the declared package, sends a real future encrypted action, and exports/
+verifies a fourth interval without rewriting any prior interval. Separate
+owner-resigned and re-encrypted malformed packages challenge coverage, order,
+public state, key maps, definition and freshness. A genuine conflicting logical
+action and an altered-AAD ciphertext reach the inner checks. Custody vectors
+attempt actual AEAD with every old interval key against a later same-epoch
+segment and an old grant key against a new grant. Bob consumes his valid removal
+Commit, reaches `removedFromGroup`, and fails direct future crypto while Carol
+succeeds; a preceding non-removal catch-up is the positive control.
+
+The maximum 16 MiB vector exercises actual canonical bytes, AES-GCM, 1,025
+signed chunks and the actual manifest, with maximum-plus-one refusal. Its core
+is deliberately a string: this is a framing/cryptography bound, not a valid
+history. A separate maximum-count full GrantCore actually encrypts/reopens
+65,536 exact key pairs; its encoded plaintext is below 16 MiB. More than 65,536
+keys is rejected before use. Maximum descriptor/logical/retention indexes use
+actual serialized tuples, with count-plus-one refusals. Safety ceilings do not
+promise their simultaneous admission: complete wire cost can exhaust 256 MiB
+earlier. Byte rollover uses real records at a deliberately smaller configured
+segment limit, verifies every recovered record, and rejects a singleton whose
+mandatory proof cannot fit. No claim is made that a maximal legal plaintext
+BodyCore exists at every possible one-byte boundary.
+
+The increasing 32/64/128-entry samples record one immutable log write per entry,
+one new-record read on the next append, no old-segment encryption on append or
+export, one key visit per selected segment on explicit export, and individual
+canonical allocation sizes. Their two-member small-action record sizes are
+about 6.8 KiB per entry. Linear extrapolation leaves room for 10,000 such entries
+under the retained-byte ceiling with ordinary 128-entry sealing; it is an
+encoding estimate, not a benchmark, capacity guarantee for larger rosters or a
+promise to retain arbitrarily many full snapshot exports. Each actual snapshot
+must pass exact complete-closure eligibility.
+
+Recovered records are written to a fresh fixture namespace during verification.
+That namespace is quarantine until `VerifiedHistory` is returned; failures leave
+it as evidence and never install a live client. This fixture does not supply the
+production atomic storage promotion, IndexedDB crash protocol or resumable
+snapshot downloader. Normal append uses a compact live crypto snapshot and
+file/IndexedDB per-record storage, while the existing signed-order transport
+model remains an in-memory P4 precursor. No SQL, application runtime or UI has
+been added.
+
+## Socket reservation and recovery commands
+
+The v2 fixture opts into the existing isolated gateway via a root validator,
+strict reservation validator, extension-state hooks and extra commands. The
+original v1 defaults and all original nine native regression scenarios remain
+required. On a v2 root, legacy OBJECT/CLOSURE/NOSEQ-CLOSURE recovery routes are
+explicitly disabled; original ordered EVENT/REQ and restore reconciliation remain. It is a small development extension, not a general relay framework.
+Both listeners retain endpoint-bound NIP-42 AUTH. Only the private authenticated
+sequencer/replica operator can call these write commands; all objects and plan
+declarations also require the enrolled owner signature.
+
+| Private command | Exact effect |
+| --- | --- |
+| `SEG-BEGIN declaration` | Start one owner-signed plan; no reservation or complete promise |
+| `SEG-PLAN declarationID tuples` | Add at most 128 distinct exact-ID/cost tuples per page |
+| `SEG-RESERVE declarationID` | Verify entire count/hash/total, reserve all missing costs, persist, then retain declaration |
+| `SEG-OBJECT event` | Convert a planned cost to an actual conservative reservation before native publication/readback |
+| `SEG-COMPLETE declarationID` | Reconstruct actual public object closure, check every chunk and original interval boundary, then record eligible T |
+
+The owner-signed declaration is charged in addition to its plan. It is excluded
+from its own hash-bound plan to avoid a self-reference. Old exports and uncertain
+objects stay charged even when a new plan no longer lists them. Original orders
+continue through the existing fenced `EVENT` route. One reserved preparation
+must finish before replacement; there is no speculative refund or abandoned-plan
+quota reclamation. Pending tuples, anticipated-cost tuples and completed
+checkpoint pointers jointly fit a 32 MiB serialized metadata envelope. This
+joint limit can refuse earlier than any individual count ceiling. Fixture
+reconstruction checks these indexes against actual reservations and original
+journal boundaries; it is not fsync/crash atomicity.
+
+A public `SEG-OPEN subscription checkpointID-or-null requestedPosition` offers
+an eligible sealed checkpoint and reports F, its tip, T and whether the suffix is
+available. An exact checkpoint ID cannot silently select an older one.
+`SEG-GET subscription checkpointID IDs` returns at most 128 exact objects within
+1 MiB, with EOSE meaning that page only. The server rebuilds/caches a bounded
+public closure ID index and rejects any requested object outside that checkpoint.
+Every queued frame uses the base current-membership/fence check immediately
+before `send`. No client plaintext/grant keys are disclosed to the gateway.
+
+The native test verifies the prepared private archive before requesting stronger
+retention, refuses a signed T=6 while F=5 until the last ordered entry arrives,
+rejects genuinely suppressed or wrong signed backend page events, loses an actual native EOSE, reconstructs the file with uncertainty
+still charged, retries and verifies complete recovery over multiple socket
+pages. It tests exact prepared signed-byte capacity and one byte less using a
+smaller configured fixture ceiling, preserving the previous T on refusal and
+interrupted transfer. The production ceiling remains 256 MiB; this is not a
+256 MiB physical-store or 10,000-event benchmark. Uploads are sequential, with at
+most one event/frame in the publisher's active outbox, below the unchanged
+64 MiB ceiling. Durable outbox scheduling remains P4/P5.
+
+A later unsealed suffix cannot leak through an older checkpoint. A learned
+removal with a lost native ACK blocks subsequent old-history pages before
+retention, after intact reconstruction, and after the removal is confirmed.
+The retained owner remains a positive reader. The preserved P1c suite separately
+repeats full-buffer, slow-reader, out-of-order-control, restore fence, public
+COUNT/NEG/HLL and actual sandboxed private-backend isolation cases. The new local
+client itself is not a deployment-wide network-isolation proof.
+
+## Remaining gate and decision audit
+
+This package's proposed decision is **continue to independent exact-profile
+review and explicit adoption assessment**. It supplies a concrete full-prefix
+segmentation/custody/eligibility proposal rather than selecting a 128-entry
+instance lifetime. There is no automatic transition from its success to a gate.
+
+| Gate | Evidence and remaining decision |
+| --- | --- |
+| G1 | P1a incompatibility remains a STOP for the Marmot candidate pair. P1b/P1c preserve actual lower-API ordered MLS evidence; the Noseq-specific RFC 9420/9750 binding still needs explicit reviewed adoption. |
+| G2 | This candidate adds segmented full-prefix coverage, small real custody/restore/native composition and explicit conservative eligibility. Exact-head independent review and acceptance of owner-attested historical controls, retained openings and old-vault capabilities remain required. Production atomic outbox/storage coupling belongs to P4–P6. |
+| G3 | Existing real admission/Commit and account/device/leaf checks remain prerequisites. Owner availability, immutable-owner compromise and failure/stall policy need explicit adopted profile approval. |
+| G4 | Existing strict wire/definition/signer/privacy cases plus new kinds/graph/custody/bounds must receive exact-profile review and adoption. No NIP registration/interoperability is inferred. |
+| G5 | Real private gateway/strfry prerequisites and new multi-page reservation paths remain bounded local evidence. Named-prefix unseen-removal old-history exposure must be affirmed again; deployment isolation, durability and platform portability remain P4/P5. |
+
+All five gates also require genuine independent decision evidence, root adoption
+and a separately commissioned, independently reviewed detached-decision validator
+before activation. Neither a workroom publication approval, boolean, arbitrary
+report ID nor rewritten JSON meets that requirement. Full gate commands remain
+nonzero, and P2–P9 are not authorized by this investigation.

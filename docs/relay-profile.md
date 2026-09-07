@@ -17,6 +17,11 @@ old-history exposure after an unseen removal for this investigation. This is not
 globally current access. An eventual adoption must affirm the exposure again
 after independent review; publication of these fixtures does not adopt it.
 
+The [P1d segmented fixture](segmented-recovery.md#socket-reservation-and-recovery-commands)
+adds an opt-in v2 root and bounded exact-ID reservation/descriptor/chunk routes.
+It uses the same AUTH, learned-control, restore and dequeue/send authority checks.
+Its eligible sealed checkpoint T is separate from this gateway authority F.
+
 ## Proposed public boundary
 
 Each instance opts into an exact owner-signed genesis and sequencer public key.

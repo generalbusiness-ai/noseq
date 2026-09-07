@@ -16,15 +16,15 @@ export interface Frame { connection: string; direction: "send" | "receive"; mess
 // Actual sockets and unmodified native storage; selectively withhold one class of reply, never fabricate a success.
 export async function readbackProxy(backendUrl:string,trace:Frame[]) {
   const server=new WebSocketServer({port:0,host:"127.0.0.1"});await new Promise<void>(resolve=>server.once("listening",resolve));
-  const sockets:WebSocket[]=[];const dropAck=new Set<string>(),dropEose=new Set<string>();
+  const sockets:WebSocket[]=[];const dropAck=new Set<string>(),dropEose=new Set<string>(),dropEvent=new Set<string>(),replaceEvent=new Map<string,Signed>();
   server.on("connection",front=>{
     const back=new WebSocket(backendUrl);sockets.push(front,back);const pending:string[]=[],omit=new Set<string>();
     front.on("error",()=>{});back.on("error",()=>front.terminate());back.on("open",()=>pending.splice(0).forEach(raw=>back.send(raw)));
     front.on("message",bytes=>{const raw=bytes.toString(),m=JSON.parse(raw);if(m[0]==="REQ"&&m[2]?.ids?.some((id:string)=>dropEose.has(id)))omit.add(m[1]);trace.push({connection:"native-fault-proxy",direction:"send",message:m});if(back.readyState===WebSocket.OPEN)back.send(raw);else pending.push(raw);});
-    back.on("message",bytes=>{const raw=bytes.toString(),m=JSON.parse(raw);if((m[0]==="EOSE"&&omit.has(m[1]))||(m[0]==="OK"&&dropAck.has(m[1]))){trace.push({connection:"native-fault-proxy",direction:"receive",message:["suppressed",m]});return;}if(front.readyState===WebSocket.OPEN)front.send(raw);});
+    back.on("message",bytes=>{const raw=bytes.toString(),m=JSON.parse(raw);if((m[0]==="EOSE"&&omit.has(m[1]))||(m[0]==="OK"&&dropAck.has(m[1]))||(m[0]==="EVENT"&&dropEvent.has(m[2]?.id))){trace.push({connection:"native-fault-proxy",direction:"receive",message:["suppressed",m]});return;}if(m[0]==="EVENT"&&replaceEvent.has(m[2]?.id)){const replacement=replaceEvent.get(m[2].id)!;trace.push({connection:"native-fault-proxy",direction:"receive",message:["substituted-wrong-signed-event",m,replacement]});if(front.readyState===WebSocket.OPEN)front.send(canonical([m[0],m[1],replacement]));return;}if(front.readyState===WebSocket.OPEN)front.send(raw);});
     front.on("close",()=>back.close());back.on("close",()=>front.close());
   });
-  return {url:`ws://127.0.0.1:${(server.address() as {port:number}).port}`,dropAck,dropEose,async stop(){for(const socket of sockets)socket.terminate();await new Promise<void>(resolve=>server.close(()=>resolve()));}};
+  return {url:`ws://127.0.0.1:${(server.address() as {port:number}).port}`,dropAck,dropEose,dropEvent,replaceEvent,async stop(){for(const socket of sockets)socket.terminate();await new Promise<void>(resolve=>server.close(()=>resolve()));}};
 }
 export class Peer {
   messages: unknown[][] = []; closed = false;

@@ -11,6 +11,12 @@ storage or production all-device-loss onboarding. This distinction is part of
 the proposal, not a qualification to omit from a future invitation. The exact
 profile is [protocol v0](protocol-v0.md).
 
+The [P1d segmented successor](segmented-recovery.md) gives the concrete larger-
+history proposal: one independently keyed immutable interval at a time, a
+checkpoint-specific shared grant, and a separate compact owner vault. The v1
+representation below remains a required compatibility probe. The successor
+retains this owner-attestation and old-secret capability boundary.
+
 ## What is archived and trusted
 
 The shared archive contains the original owner-signed genesis, the complete

@@ -9,16 +9,16 @@ import { authenticate, type Session } from "./policies.ts";
 import { canonical, clone, equal, eventBytes, fields, hex, hex32, integer, limits, parse, random, read, readGenesis, unb64, type Signed, type Context } from "./wire.ts";
 
 interface Stored { events: Signed[]; objects: Record<string, Signed>; closures: Record<string, Signed>; reservations: Record<string, Signed>; retained: Record<string, Signed>; pending: Signed[]; knownControl: Signed | null; initial: PublicState; public: PublicState; fork: boolean }
-interface Saved { events: string[]; objects: string[]; closures: Record<string,string>; reservations: Signed[]; retained: string[]; pending: Signed[]; knownControl: Signed | null; initial: PublicState; public: PublicState; fork: boolean }
+interface Saved { extension?: unknown; events: string[]; objects: string[]; closures: Record<string,string>; reservations: Signed[]; retained: string[]; pending: Signed[]; knownControl: Signed | null; initial: PublicState; public: PublicState; fork: boolean }
 interface Filter { kinds: number[]; ids?: string[]; limit: number; "#h": string[]; "#i": string[]; "#d": string[]; noseq_tip?: string }
-interface Reader { socket: WebSocket; auth: Session; subscriptions: Map<string, Filter[]>; blocked: Set<string>; queue: { subscription: string; message: unknown[] }[]; queuedBytes: number; draining: boolean; operator: boolean }
+export interface Reader { socket: WebSocket; auth: Session; subscriptions: Map<string, Filter[]>; blocked: Set<string>; queue: { subscription: string; message: unknown[] }[]; queuedBytes: number; draining: boolean; operator: boolean }
 export class Gateway {
   data: Stored; buffer = new Map<number, Signed>(); restoredFence: boolean; controlGap = false; paused = false; journalBytes = 0;
   released: { id: string | null; authority: string; subscription: string }[] = []; private readers = new Set<Reader>(); private tail = Promise.resolve();
   private backend?: Peer; private backendRequest = 0; private listeners: { server: ReturnType<typeof createServer>; ws: WebSocketServer }[] = [];
   url = ""; operatorUrl = ""; reconcileChallenge = hex(random());
-  constructor(readonly ctx: Context, readonly root: Signed, readonly statePath: string, initial: PublicState, founder: Signed, readonly replicas: string[], readonly trace: Frame[], restored = false) {
-    equal(readGenesis(root, ctx.owner, ctx.genesis), ctx, "gateway enrollment root");
+  constructor(readonly ctx: Context, readonly root: Signed, readonly statePath: string, initial: PublicState, founder: Signed, readonly replicas: string[], readonly trace: Frame[], restored = false, validateRoot = readGenesis) {
+    equal(validateRoot(root, ctx.owner, ctx.genesis), ctx, "gateway enrollment root");
     fields(initial,["version","epoch","members"]); assert.equal(initial.version,0); assert.equal(initial.epoch,0); checkMembers(initial.members); assert.equal(initial.members.length,1);
     const proof=read(eventBytes(founder),"proof",ctx); assert.equal(proof.pubkey,ctx.owner); const binding=parse(proof.content); fields(binding,["type","device","suite","leaf"]); assert.equal(binding.type,"account-leaf"); assert.equal(binding.suite,1);
     equal(initial.members[0],{account:ctx.owner,device:binding.device,leaf:binding.leaf},"owner-signed founder binding");
@@ -26,12 +26,13 @@ export class Gateway {
   }
   get tip(): string { return this.data.events.at(-1)?.id ?? this.ctx.genesis; }
   get readable(): boolean { return !this.restoredFence && !this.controlGap && !this.data.fork; }
-  private mayRead(r: Reader): boolean { return this.readable && r.auth.authenticated.some(k => this.data.public.members.some(m => m.device === k)); }
-  private mayWrite(r: Reader): boolean { return r.operator && r.auth.authenticated.some(k => k === this.ctx.sequencer || this.replicas.includes(k)); }
-  private persist(): void {
+  protected mayRead(r: Reader): boolean { return this.readable && r.auth.authenticated.some(k => this.data.public.members.some(m => m.device === k)); }
+  protected mayWrite(r: Reader): boolean { return r.operator && r.auth.authenticated.some(k => k === this.ctx.sequencer || this.replicas.includes(k)); }
+  protected persist(): void {
     this.data.pending = [...this.buffer.values()].map(clone);
     // Store each signed reservation once; confirmed retention and public indexes refer to exact IDs.
     const saved: Saved = {...this.data,events:this.data.events.map(e=>e.id),objects:Object.keys(this.data.objects),closures:Object.fromEntries(Object.entries(this.data.closures).map(([tip,e])=>[tip,e.id])),reservations:Object.values(this.data.reservations),retained:Object.keys(this.data.retained)};
+    const extension=this.saveExtension();if(extension!==undefined)saved.extension=extension;
     writeFileSync(this.statePath + ".next", canonical(saved)); renameSync(this.statePath + ".next", this.statePath);
   }
   loadIntact(): void {
@@ -39,13 +40,13 @@ export class Gateway {
     const stateLimit = 2 * limits.journal + (limits.pageEvents + 1) * limits.event + 1_048_576;
     assert(statSync(this.statePath).size <= stateLimit, "gateway state envelope");
     const saved = parse(readFileSync(this.statePath, "utf8"), stateLimit) as unknown as Saved;
-    fields(saved,["events","objects","closures","reservations","retained","pending","knownControl","initial","public","fork"]);
+    fields(saved,["events","objects","closures","reservations","retained","pending","knownControl","initial","public","fork",...(saved.extension===undefined?[]:["extension"])]);
     for(const values of [saved.events,saved.objects,saved.reservations,saved.retained,saved.pending]) assert(Array.isArray(values)); assert.equal(typeof saved.fork,"boolean");
     const reservations: Record<string,Signed> = {}, retained: Record<string,Signed> = {};
     let total = 0;
     for (const signed of saved.reservations) {
       assert(!reservations[signed.id],"duplicate reservation"); const kind = signed.kind === 8792 ? "order" : signed.kind === 8795 ? "chunk" : "proof";
-      read(eventBytes(signed),kind,this.ctx); total += Buffer.byteLength(eventBytes(signed)); assert(total <= limits.journal,"restored retention quota");
+      this.validateReservation(signed,kind); total += Buffer.byteLength(eventBytes(signed)); assert(total <= limits.journal,"restored retention quota");
       reservations[signed.id]=signed;
     }
     for(const id of saved.retained){hex32(id);assert(reservations[id]&&!retained[id],"invalid retained reservation");retained[id]=reservations[id]!;}
@@ -60,8 +61,12 @@ export class Gateway {
     if(data.knownControl){const e=entry(data.knownControl,this.ctx);assert(e.admission&&e.position>data.events.length,"invalid known-control fence");}
     for(const signed of pending.values()){const e=entry(signed,this.ctx);if(e.admission)assert(data.knownControl&&entry(data.knownControl,this.ctx).position>=e.position,"lost pending-control fence");}
     this.data = data; this.buffer = pending; this.controlGap = data.knownControl !== null;
-    this.journalBytes = total; // Intact-file reconstruction; no fsync/crash guarantee.
+    this.journalBytes = total;this.loadExtension(saved.extension); // Intact-file reconstruction; no fsync/crash guarantee.
   }
+  protected saveExtension():unknown{return undefined;}
+  protected loadExtension(value:unknown):void{assert(value===undefined,"unexpected extension");}
+  protected validateReservation(signed:Signed,kind:"order"|"chunk"|"proof"):void{read(eventBytes(signed),kind,this.ctx);}
+  protected async extra(_reader:Reader,_message:unknown[]):Promise<boolean>{return false;}
   metadata() { return { name: "Noseq isolated prefix gateway", supported_nips: [1, 11, 42], limitation: { max_message_length: limits.frame, max_subscriptions: limits.subscriptions, max_limit: limits.pageEvents, max_event_tags: limits.tags, max_content_length: limits.event, auth_required: true, restricted_writes: true }, noseq: { policy: "highest-verified-retained-prefix", status: "development-fixture", normal_history: true, public_count: false, public_negentropy: false } }; }
   async start(backendUrl: string): Promise<void> {
     this.backend = await Peer.connect(backendUrl, "gateway-private-backend", this.trace);
@@ -81,7 +86,7 @@ export class Gateway {
     }
   }
   private async backendPut(e: Signed): Promise<void> { assert(this.backend); this.backend.send(["EVENT", e]); const ok = await this.backend.take(m => m[0] === "OK" && m[1] === e.id); assert.equal(ok[2], true, "backend refused retention"); }
-  private async retain(e: Signed): Promise<void> {
+  protected async retain(e: Signed): Promise<void> {
     const previous = this.data.reservations[e.id]; if (previous) equal(previous,e,"reserved identity changed");
     const added = previous ? 0 : Buffer.byteLength(eventBytes(e));
     assert(this.journalBytes + added <= limits.journal,"retention full; no eviction");
@@ -97,7 +102,7 @@ export class Gateway {
     if(!known||e.position>known.position)this.data.knownControl=clone(signed);
     this.controlGap=true;this.persist();this.cancelUnauthorized(); // Before any await or capacity refusal, without advancing retained authority.
   }
-  private async backendGet(id: string): Promise<Signed> {
+  protected async backendGet(id: string): Promise<Signed> {
     assert(this.backend); const sub = "private-" + ++this.backendRequest; this.backend.send(["REQ", sub, { ids: [id], limit: 1 }]);
     await this.backend.take(m => m[0] === "EOSE" && m[1] === sub); const found = this.backend.messages.find(m => m[0] === "EVENT" && m[1] === sub); this.backend.messages = this.backend.messages.filter(m => m[1] !== sub); this.backend.send(["CLOSE", sub]);
     assert(found, "retained identity missing: partial/unavailable"); return found[2] as Signed;
@@ -124,7 +129,7 @@ export class Gateway {
     if (f.noseq_tip !== undefined) hex32(f.noseq_tip); return f as unknown as Filter;
   }
   private matches(e: Signed, f: Filter): boolean { return f.kinds.includes(e.kind) && (!f.ids || f.ids.includes(e.id)); }
-  private enqueue(r: Reader, subscription: string, message: unknown[]): void {
+  protected enqueue(r: Reader, subscription: string, message: unknown[]): void {
     if (r.blocked.has(subscription)) return;
     if (!this.mayRead(r)) { if (r.socket.readyState === WebSocket.OPEN) r.socket.send(canonical(["CLOSED", subscription, "restricted or unavailable"])); return; }
     const bytes = Buffer.byteLength(canonical(message)); assert(bytes <= limits.frame, "outbound frame cap");
@@ -151,6 +156,7 @@ export class Gateway {
       try { authenticate(r.auth, e, Math.floor(Date.now() / 1000)); r.socket.send(canonical(["OK", e.id, true, ""])); }
       catch { r.socket.send(canonical(["OK", typeof e.id === "string" ? e.id : "", false, "auth-required: invalid proof"])); } return;
     }
+    if(await this.extra(r,m))return;
     if (r.operator) {
       assert(this.mayWrite(r), "operator authorization");
       if (m[0] === "EVENT") { assert.equal(m.length, 2); const e = m[1] as Signed; try { await this.ingest(e); r.socket.send(canonical(["OK", e.id, !this.buffer.has(entry(e, this.ctx).position), this.buffer.has(entry(e, this.ctx).position) ? "blocked: buffered dependency; not retained" : "retained"])); } catch (error) { r.socket.send(canonical(["OK", e.id, false, String(error)])); } return; }
