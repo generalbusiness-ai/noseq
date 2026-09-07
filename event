@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:00d18d1ef659ed69ced7e1d8a94cb3af283a9017","text":"Merge retired a covered predecessor; the successor is at docs/toolchain.md."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:1666b65b8ea680de4168da34b56368dc4061caef","text":"Merge retired a covered predecessor; the successor is at tsconfig.segmented-recovery.json."}
