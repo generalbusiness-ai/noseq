@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:49a08962318e5bb82bab1a52d8e15a18d3bfe9c9","text":"Merge retired a covered predecessor; the successor is at tests/segmented-recovery/native.test.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5195c4f9127b83998166f6661d5e8f8d4dad567b","text":"Merge retired a covered predecessor; the successor is at docs/relay-profile.md."}
