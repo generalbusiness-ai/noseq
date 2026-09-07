@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:4e4447c3c4373fce5eb121fdb021e07018f87dd9","text":"Merge retired a covered predecessor; the successor is at tests/segmented-recovery/client.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5feb3467913629b76bdbb610642450ead5bc012d","text":"Merge retired a covered predecessor; the successor is at tests/segmented-recovery/client.ts."}
