@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:3694d7bff36cc98c6d65ab51d5a5305f004cb588","text":"Merge retired a covered predecessor; the successor is at docs/crypto-feasibility.md."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:449f9dc789eb96aa4f5bc6ac62ec3e4934251b44","text":"Merge retired a covered predecessor; the successor is at scripts/ordered-mls.ts."}
