@@ -37,7 +37,11 @@
     "probe:protocol-feasibility": "node scripts/protocol-feasibility.ts",
     "verify:protocol-feasibility": "node scripts/protocol-feasibility.ts --verify",
     "probe:segmented-recovery": "node scripts/segmented-recovery.ts",
-    "verify:segmented-recovery": "node scripts/segmented-recovery.ts --verify"
+    "verify:segmented-recovery": "node scripts/segmented-recovery.ts --verify",
+    "probe:protocol-closure": "node scripts/protocol-closure.ts",
+    "verify:protocol-closure": "node scripts/protocol-closure.ts --verify",
+    "build:decision-verifier": "node scripts/decision-verifier-build.ts",
+    "verify:decision": "node scripts/decision-verify.ts"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "1.1.4",

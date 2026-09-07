@@ -1,0 +1,88 @@
+import { add, device, entry } from "../protocol-feasibility/crypto.ts";
+import { key } from "../segmented-recovery/fixture.ts";
+import { check, equal, hash } from "../segmented-recovery/wire.ts";
+import { sign } from "../protocol-feasibility/wire.ts";
+import type { TextStore } from "../segmented-recovery/types.ts";
+import { fixture, refused } from "./fixture.ts";
+
+export async function staged(backing:TextStore,fresh:()=>Promise<TextStore>,name:string) {
+  const f=await fixture(backing,fresh,name),{w}=f,refusals=[];
+  f.owner=await f.save(f.owner,"before-generation");
+  refusals.push(await refused("inherited v1 restart",()=>f.owner.restart(),"explicit asynchronous compact reconstruction"));
+  refusals.push(await refused("unsupported v2 publication",()=>f.owner.publish(),"unsupported"));
+  const owner2Device=await device(w.env,w.ctx,key(101),key(207));
+  let owner2=await f.join(owner2Device,"other-owner-device");
+  owner2=await f.save(owner2,"second-owner-device-joined");
+  const losingTarget=await device(w.env,w.ctx,key(104),key(204));
+  const winner=await f.owner.stageCommit([add(w.carolDevice)]),loser=await owner2.stageCommit([add(losingTarget)]);
+  const acceptedBefore=f.owner.data.state;
+  check(f.owner.data.released[winner.event.id]===undefined&&owner2.data.released[loser.event.id]===undefined,"Welcome stays provisional");
+  f.owner=await f.save(f.owner,"staged-winning-Commit");owner2=await f.save(owner2,"staged-losing-Commit");
+  equal(f.owner.data.pending!.event,winner.event,"exact staged Commit retry");
+  equal(f.owner.pendingAdmission,winner.admission,"exact staged admission retry");
+  const earlier=await f.bob.stageAction("earlier ordered application updates pending states",key(71000));
+  f.bob=await f.save(f.bob,"staged-application-before-generation-echo");
+  const earlierOrder=await w.journal.append(earlier);await f.accept(earlierOrder,[f.bob,owner2]);
+  check(f.owner.data.state!==acceptedBefore&&f.owner.data.pending!.base===f.owner.data.state,"earlier application updates pending base");
+  f.owner=await f.save(f.owner,"Commit-after-earlier-application");owner2=await f.save(owner2,"losing-Commit-after-earlier-application");
+  check(await w.journal.half(winner.event.id,"admission",winner.admission)===null,"admission first waits");
+  check(await w.journal.half(winner.event.id,"admission",winner.admission)===null,"duplicate admission first waits");
+  refusals.push(await refused("mismatched admission/submission pair",()=>w.journal.half(winner.event.id,"submission",loser.event),"substituted half"));
+  const won=await w.journal.half(winner.event.id,"submission",winner.event);check(won,"winner paired");
+  await f.accept(won,[f.bob,owner2]);
+  check(!f.owner.data.pending&&!owner2.data.pending&&!owner2.pendingAdmission,"winner and loser pending state retired");
+  check(f.owner.data.released[winner.event.id]&&!owner2.data.released[loser.event.id],"only accepted winner releases Welcome");
+  f.owner=await f.save(f.owner,"after-winning-self-echo");owner2=await f.save(owner2,"after-losing-competitor-echo");
+  equal(await w.journal.append(winner.event,winner.admission),won,"exact winning receipt retry");
+  check(await f.owner.receive(won)==="duplicate"&&await owner2.receive(won)==="duplicate","duplicate winning echo");
+  check(await w.journal.half(loser.event.id,"submission",loser.event)===null,"loser submission first waits");
+  const lost=await w.journal.half(loser.event.id,"admission",loser.admission);check(lost,"loser paired stale");
+  await f.accept(lost,[f.bob,owner2]);
+  check((await owner2.log.get(owner2.log.length)).outcome.disposition==="stale"&&!owner2.data.released[loser.event.id],"losing self echo stays stale and Welcome disposed");
+  owner2=await f.save(owner2,"after-losing-self-echo");
+  equal(await w.journal.append(loser.event,loser.admission),lost,"exact losing receipt retry");
+  // The second half order also succeeds for a fresh control, not only a stale loser.
+  const next=await f.owner.stageCommit([add(losingTarget)]);
+  f.owner=await f.save(f.owner,"fresh-submission-first-Commit");
+  check(await w.journal.half(next.event.id,"submission",next.event)===null,"fresh submission first waits");
+  check(await w.journal.half(next.event.id,"submission",next.event)===null,"duplicate submission first waits");
+  const nextOrder=await w.journal.half(next.event.id,"admission",next.admission);check(nextOrder,"fresh submission-first pair");
+  await f.accept(nextOrder,[f.bob,owner2]);
+  f.owner=await f.save(f.owner,"fresh-control-accepted");
+  const app=await f.bob.stageAction("provisional application survives earlier message",key(71001));
+  f.bob=await f.save(f.bob,"application-staged");
+  await f.apply("message before application self echo",[f.bob,owner2]);
+  f.bob=await f.save(f.bob,"application-after-earlier-application");
+  equal(f.bob.data.pending!.event,app,"exact application bytes after interleaving");
+  const appOrder=await w.journal.append(app);await f.accept(appOrder,[f.bob,owner2]);
+  f.bob=await f.save(f.bob,"application-after-acceptance");
+  equal(await w.journal.append(app),appOrder,"exact application receipt retry");
+  check(await f.bob.receive(appOrder)==="duplicate","accepted application duplicate");
+  equal(await f.bob.log.outcomes(),await f.owner.log.outcomes(),"accepted canonical outcomes after all staged boundaries");
+  equal(await owner2.projection(),await f.owner.projection(),"competing owner convergence");
+  let gap=await f.save(f.bob,"before-bounded-gap"),fork=await f.save(f.bob,"before-observed-fork");
+  const gapBase=gap.log.length;
+  // All entries are real signed orders containing actual encrypted applications.
+  for(let i=0;i<65;i++)await f.apply("capacity future application "+i,[f.bob,owner2]);
+  for(let i=gapBase+2;i<=gapBase+64;i++)check(await gap.receive(w.journal.events[i-1]!)==="wait","authenticated future ID retained");
+  check(gap.observed.size===63&&gap.log.length===gapBase,"63 future gaps reserve contiguous slot");
+  gap=await f.save(gap,"future-gap-at-capacity");
+  refusals.push(await refused("future gap capacity plus one",()=>gap.receive(w.journal.events[gapBase+64]!),"future-position capacity"));
+  check(gap.observed.size===63&&gap.log.length===gapBase,"overflow does not discard evidence or advance");
+  check(await gap.receive(w.journal.events[gapBase]!)==="accepted","reserved contiguous slot permits progress");
+  for(let i=gapBase+2;i<=w.journal.events.length;i++)check(await gap.receive(w.journal.events[i-1]!)==="accepted","gap prefix drains");
+  gap=await f.save(gap,"bounded-gap-drained");
+  check(gap.observed.size===0,"no accumulated observed history");
+  equal(await gap.projection(),await f.owner.projection(),"capacity positive convergence");
+  const future=w.journal.events[gapBase+1]!,body=entry(future,w.ctx);
+  check(await fork.receive(future)==="wait","fork observer sees actual future");
+  const conflict=sign(key(109),"order",w.ctx,{...body,previous:key(99990)});
+  refusals.push(await refused("signed same-position fork",()=>fork.receive(conflict),"observed fork"));
+  fork=await f.save(fork,"observed-fork-halt-reopened");
+  refusals.push(await refused("reopened fork refuses continuation",()=>fork.receive(w.journal.events[gapBase]!),"fork halt"));
+  refusals.push(await refused("reopened fork refuses generation",()=>fork.stageAction("must not stage",key(79990)),"fork halt"));
+  check(fork.data.fork&&fork.log.length===gapBase,"fork halt persists with unchanged accepted prefix");
+  return f.result({winner:winner.event.id,winnerReceipt:won.id,loser:loser.event.id,loserReceipt:lost.id,
+    freshSubmissionFirst:nextOrder.id,interleavedApplication:appOrder.id,gapBase,gapMaximum:63,
+    acceptedCount:f.owner.log.length,projectionHash:await hash(await f.owner.projection()),refusals});
+}
