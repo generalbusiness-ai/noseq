@@ -89,13 +89,12 @@ test("node.raw-reports", () => {
 });
 test("node.future-stages", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  const future = Object.entries(pkg.scripts as Record<string, string>)
-    .filter(([, command]) => command.startsWith("node scripts/not-implemented.ts"));
-  assert.equal(future.length, 15);
-  for (const [command] of future) {
-    const result = spawnSync(process.execPath, ["scripts/not-implemented.ts", command], { encoding: "utf8" });
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /stage not implemented/);
+  const future = ["test:crypto-feasibility", "gate:protocol", "test:protocol", "test:runtime", "test:definition", "test:workers", "test:relay", "test:mirror", "test:client", "test:recovery", "test:ui", "test:dynamic-apps", "test:flows", "acceptance", "benchmark"];
+  assert.equal(future.length, 15); // Preserve every reserved P0 command, including the two new closed gate readers.
+  for (const command of future) {
+    const args = (pkg.scripts[command] as string).split(" "); assert.equal(args.shift(), "node");
+    const result = spawnSync(process.execPath, args, { encoding: "utf8" });
+    assert.equal(result.status, 1); assert.match(result.stderr, /stage not implemented/);
   }
   const aggregate = spawnSync(process.execPath, ["scripts/verify-evidence.ts"], { encoding: "utf8" });
   assert.equal(aggregate.status, 1);

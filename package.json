@@ -15,8 +15,8 @@
     "browser:install": "playwright install chromium",
     "test:harness": "node scripts/run-harness.ts",
     "verify:evidence": "node scripts/verify-evidence.ts",
-    "test:crypto-feasibility": "node scripts/not-implemented.ts test:crypto-feasibility",
-    "gate:protocol": "node scripts/not-implemented.ts gate:protocol",
+    "test:crypto-feasibility": "node scripts/protocol-gates.ts test:crypto-feasibility",
+    "gate:protocol": "node scripts/protocol-gates.ts gate:protocol",
     "test:protocol": "node scripts/not-implemented.ts test:protocol",
     "test:runtime": "node scripts/not-implemented.ts test:runtime",
     "test:definition": "node scripts/not-implemented.ts test:definition",
@@ -33,18 +33,23 @@
     "probe:crypto-preflight": "node scripts/crypto-preflight.ts",
     "verify:crypto-preflight": "node scripts/crypto-preflight.ts --verify",
     "probe:ordered-mls": "node scripts/ordered-mls.ts",
-    "verify:ordered-mls": "node scripts/ordered-mls.ts --verify"
+    "verify:ordered-mls": "node scripts/ordered-mls.ts --verify",
+    "probe:protocol-feasibility": "node scripts/protocol-feasibility.ts",
+    "verify:protocol-feasibility": "node scripts/protocol-feasibility.ts --verify"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "1.1.4",
     "@noble/curves": "2.2.0",
     "@playwright/test": "1.63.0",
     "@types/node": "26.4.1",
+    "@types/ws": "8.18.1",
+    "nostr-tools": "2.25.2",
     "pnpm": "10.34.5",
     "typescript": "7.0.2",
     "vite": "8.2.2",
     "vitest": "4.1.11",
-    "wrangler": "4.129.0"
+    "wrangler": "4.129.0",
+    "ws": "8.21.0"
   },
   "allowScripts": {
     "esbuild@0.28.1": true,
