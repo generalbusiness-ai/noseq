@@ -114,16 +114,18 @@ export async function closurePlan(
     account(e);
     return e;
   };
-  account(root);
-  account(certificate);
-  account(location);
+  // Caller-held proofs describe the desired closure; they are not evidence that
+  // its selected store actually retains those exact bytes.
+  equal(await exact(root.id), root, "retained root bytes");
+  equal(await exact(certificate.id), certificate, "retained checkpoint bytes");
+  equal(await exact(location.id), location, "retained locator bytes");
   for (let i = 0; i < c.last; i++) {
     const e = entry(orders[i]!, ctx);
     check(
       e.position === i + 1 && e.previous === (i ? orders[i - 1]!.id : ctx.genesis),
       "retention original order chain",
     );
-    account(orders[i]!);
+    equal(await exact(orders[i]!.id), orders[i], "retained original order bytes");
   }
   const index = await descriptorIndex(store, c, ctx, metrics());
   for (const d of index)

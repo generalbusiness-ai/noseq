@@ -278,8 +278,10 @@ export class SegmentedGateway extends Gateway {
         const p = this.extension.preparing;
         check(p?.reserved && m[1] === p.declaration.id, "reserved complete identity");
         const d = declaration(p.declaration, this.ctx),
-          store = this.backendStore(),
-          certificate = await store.get(d.checkpoint),
+          store = this.backendStore();
+        // The separately charged declaration is also required retained data.
+        equal(await store.get(p.declaration.id), p.declaration, "retained declaration bytes");
+        const certificate = await store.get(d.checkpoint),
           location = await store.get(d.locator),
           actual = await closurePlan(
             store,
@@ -356,7 +358,7 @@ export class SegmentedGateway extends Gateway {
           retainedTip: this.tip,
           sealedPrefix: selected[2],
           requestedPrefix: m[3],
-          suffixAvailable: selected[2] === maximum,
+          suffixAvailable: selected[2] === m[3],
           meaning: "opaque retained closure; client must verify complete decrypted history",
         },
       ]);

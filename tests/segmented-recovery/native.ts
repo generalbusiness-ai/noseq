@@ -32,7 +32,9 @@ export async function runNative(directory: string) {
   const backing = await diskStore(join(directory, "objects")),
     w = await world(backing, "native"),
     trace: Frame[] = [],
-    observed: unknown[] = [];
+    observed: unknown[] = [],
+    completionChecks: unknown[] = [],
+    prefixOffers: unknown[] = [];
   await w.apply("first", key(1002));
   await w.sealer.flush();
   await w.control();
@@ -43,7 +45,9 @@ export async function runNative(directory: string) {
     p = await w.sealer.export(w.owner);
   check(admitted.welcome, "native newcomer real Welcome");
   const delivery = deliverGrant(key(201), w.carolDevice.binding.device, w.ctx, p);
-  writeFileSync(join(directory, "delivery.json"), canonical(delivery), { flag: "wx" });
+  writeFileSync(join(directory, "delivery.json"), canonical(delivery), {
+    flag: "wx",
+  });
   const native = await startNative(join(directory, "strfry")),
     proxy = await readbackProxy(native.url, trace),
     statePath = join(directory, "gateway.json");
@@ -91,7 +95,11 @@ export async function runNative(directory: string) {
       p.checkpoint,
       p.locator,
       p.grantKey,
-      { owner: w.ctx.owner, genesis: w.ctx.genesis, checkpoint: p.checkpoint.id },
+      {
+        owner: w.ctx.owner,
+        genesis: w.ctx.genesis,
+        checkpoint: p.checkpoint.id,
+      },
       new Records(backing, "prepared-client-verified"),
     );
     const plan = await closurePlan(w.store, w.root.event, p.checkpoint, p.locator, w.ctx, orders),
@@ -101,11 +109,91 @@ export async function runNative(directory: string) {
     observed.push("unreserved partial plan cannot claim complete");
     for (let i = 0; i < plan.pairs.length; i += 128)
       await command(operator, ["SEG-PLAN", d.id, plan.pairs.slice(i, i + 128)], d.id);
+    proxy.dropEose.add(d.id);
+    await command(operator, ["SEG-RESERVE", d.id], d.id, false);
+    check(
+      gateway.data.reservations[d.id] &&
+        !gateway.data.retained[d.id] &&
+        gateway.extension.preparing?.reserved,
+      "uncertain declaration charged before response loss",
+    );
+    const unconfirmedDeclaration = await command(operator, ["SEG-COMPLETE", d.id], d.id, false);
+    check(
+      canonical(unconfirmedDeclaration).includes("unconfirmed closure identity"),
+      "completion requires separately charged declaration confirmation",
+    );
+    writeFileSync(join(directory, "uncertain-declaration.json"), readFileSync(statePath), {
+      flag: "wx",
+    });
+    proxy.dropEose.clear();
+    const declarationCharge = gateway.journalBytes;
     await command(operator, ["SEG-RESERVE", d.id], d.id);
+    check(
+      gateway.journalBytes === declarationCharge && gateway.data.retained[d.id],
+      "declaration retry confirms without a second charge",
+    );
     const reserved = gateway.journalBytes;
     check(reserved === plan.total + bytes(d), "all exact closure costs reserved before uploads");
-    const candidate = plan.pairs.find(([id]) => !gateway!.data.retained[id])![0],
-      event = await w.store.get(candidate);
+    // Upload every other object first: a constructor-held root must not stand
+    // in for native retention, even after the entire original prefix arrives.
+    const candidate = w.root.event.id,
+      event = w.root.event;
+    for (const [id] of plan.pairs)
+      if (id !== candidate && !gateway.data.retained[id]) {
+        const e = await w.store.get(id);
+        if (e.kind !== 8792) await command(operator, ["SEG-OBJECT", e], id);
+      }
+    const beyond = await command(operator, ["SEG-COMPLETE", d.id], d.id, false);
+    check(canonical(beyond).includes("closure retained frontier"), "actual T6 exceeds F5");
+    await command(operator, ["EVENT", orders[5]], orders[5]!.id);
+    const incomplete = async (label: string) => {
+      await command(operator, ["SEG-COMPLETE", d.id], d.id, false);
+      check(
+        gateway!.extension.completed.length === 0 &&
+          gateway!.extension.preparing?.reserved &&
+          gateway!.journalBytes === reserved,
+        "failed completion preserves preparation, T and charge: " + label,
+      );
+      completionChecks.push({
+        label,
+        completed: gateway!.extension.completed.length,
+        reserved: gateway!.extension.preparing?.reserved,
+        chargedBytes: gateway!.journalBytes,
+      });
+      writeFileSync(join(directory, label + ".json"), readFileSync(statePath), {
+        flag: "wx",
+      });
+    };
+    const reconstruct = async (label: string) => {
+      await gateway!.close();
+      gateway = new SegmentedGateway(
+        w.ctx,
+        w.root.event,
+        statePath,
+        w.initial,
+        w.sealer.founder,
+        [],
+        trace,
+      );
+      gateway.loadIntact();
+      check(
+        gateway.journalBytes === reserved &&
+          gateway.extension.completed.length === 0 &&
+          gateway.extension.preparing?.reserved,
+        "incomplete reservation reconstructed",
+      );
+      await gateway.start(proxy.url);
+      operator = await connect(gateway.operatorUrl, "segmented-operator-" + label, key(109));
+    };
+    check(
+      !gateway.data.reservations[candidate] &&
+        !gateway.data.retained[candidate] &&
+        gateway.extension.anticipated.some(([id]) => id === candidate),
+      "root never uploaded",
+    );
+    await incomplete("unuploaded-root");
+    await reconstruct("unuploaded");
+    await incomplete("unuploaded-root-reconstructed");
     proxy.dropEose.add(candidate);
     await command(operator, ["SEG-OBJECT", event], event.id, false);
     check(
@@ -114,39 +202,33 @@ export async function runNative(directory: string) {
         !gateway.data.retained[candidate],
       "uncertain write stays charged and unconfirmed",
     );
-    await command(operator, ["SEG-COMPLETE", d.id], d.id, false);
-    writeFileSync(join(directory, "uncertain.json"), readFileSync(statePath), { flag: "wx" });
+    await incomplete("uncertain");
     proxy.dropEose.clear();
-    await gateway.close();
-    gateway = new SegmentedGateway(
-      w.ctx,
-      w.root.event,
-      statePath,
-      w.initial,
-      w.sealer.founder,
-      [],
-      trace,
-    );
-    gateway.loadIntact();
-    check(
-      gateway.journalBytes === reserved && !gateway.data.retained[candidate],
-      "intact reconstruction preserves uncertainty and complete reservation",
-    );
-    await gateway.start(proxy.url);
-    operator = await connect(gateway.operatorUrl, "segmented-operator-reconstructed", key(109));
-    for (const [id] of plan.pairs)
-      if (!gateway.data.retained[id]) {
-        const e = await w.store.get(id);
-        if (e.kind !== 8792) await command(operator, ["SEG-OBJECT", e], id);
-      }
+    await reconstruct("uncertain");
+    await incomplete("uncertain-reconstructed");
+    await command(operator, ["SEG-OBJECT", event], event.id);
     check(gateway.journalBytes === reserved, "confirmation does not charge twice");
-    await command(operator, ["SEG-COMPLETE", d.id], d.id, false);
-    check(
-      gateway.extension.completed.length === 0 && gateway.data.events.length === 5,
-      "signed T6 cannot complete beyond retained F5",
-    );
-    await command(operator, ["EVENT", orders[5]], orders[5]!.id);
+    // All bytes were actually retained. Completion must still read every exact
+    // identity from the selected backend, including the root, orders and plan.
+    for (const [label, id] of [
+      ["root", candidate],
+      ["order", orders[0]!.id],
+      ["declaration", d.id],
+    ] as const) {
+      proxy.dropEvent.add(id);
+      await incomplete("suppressed-" + label);
+      proxy.dropEvent.clear();
+      proxy.replaceEvent.set(id, p.checkpoint);
+      await incomplete("substituted-" + label);
+      proxy.replaceEvent.clear();
+    }
     await command(operator, ["SEG-COMPLETE", d.id], d.id);
+    observed.push(
+      "omitted and uncertain root, including intact reconstruction, cannot advance complete T",
+    );
+    observed.push(
+      "every planned identity and separately charged declaration must be confirmed and read back exactly at completion",
+    );
     observed.push("actual T beyond F refused until missing final ordered entry is retained");
     observed.push("actual complete plan retained after uncertain-write retry and reconstruction");
     const bob = await connect(gateway.url, "segmented-newcomer-carol", key(203));
@@ -155,6 +237,25 @@ export async function runNative(directory: string) {
     check(
       (offer[2] as any).sealedPrefix === 6 && (offer[2] as any).suffixAvailable === true,
       "named complete offer",
+    );
+    prefixOffers.push(offer[2]);
+    await command(bob, ["SEG-OPEN", "lower", null, 5], "lower", false);
+    await command(bob, ["SEG-OPEN", "exact-lower", p.checkpoint.id, 5], "exact-lower", false);
+    for (const exact of [null, p.checkpoint.id]) {
+      const sub = exact ? "ahead-exact" : "ahead";
+      bob.send(["SEG-OPEN", sub, exact, 7]);
+      const ahead = await bob.take((m) => m[0] === "SEG-OFFER" && m[1] === sub);
+      prefixOffers.push(ahead[2]);
+      check(
+        (ahead[2] as any).requestedPrefix === 7 &&
+          (ahead[2] as any).retainedPrefix === 6 &&
+          (ahead[2] as any).sealedPrefix === 6 &&
+          (ahead[2] as any).suffixAvailable === false,
+        "request beyond F offers explicitly unavailable suffix",
+      );
+    }
+    observed.push(
+      "requested prefix below T refuses; equal T=F succeeds; requested beyond F labels suffix unavailable",
     );
     const socketStore = (peer: Peer): ObjectStore => ({
       put: async () => {
@@ -202,7 +303,12 @@ export async function runNative(directory: string) {
       p.checkpoint,
       p.locator,
       deliveredKey,
-      { owner: w.ctx.owner, genesis: w.ctx.genesis, checkpoint: p.checkpoint.id, tip: w.owner.tip },
+      {
+        owner: w.ctx.owner,
+        genesis: w.ctx.genesis,
+        checkpoint: p.checkpoint.id,
+        tip: w.owner.tip,
+      },
       new Records(backing, "socket-recovered"),
     );
     check(
@@ -238,6 +344,7 @@ export async function runNative(directory: string) {
         (inside[2] as any).suffixAvailable === false,
       "inside later interval offers last sealed checkpoint only",
     );
+    prefixOffers.push(inside[2]);
     const nextPackage = await w.sealer.export(w.owner),
       nextPlan = await closurePlan(
         w.store,
@@ -248,6 +355,12 @@ export async function runNative(directory: string) {
         w.journal.events,
       ),
       nextDeclaration = planDeclaration(key(101), w.ctx, nextPlan);
+    await command(
+      bob,
+      ["SEG-OPEN", "unretained-exact", nextPackage.checkpoint.id, 7],
+      "unretained-exact",
+      false,
+    );
     await command(operator, ["SEG-BEGIN", nextDeclaration], nextDeclaration.id);
     for (let i = 0; i < nextPlan.pairs.length; i += 128)
       await command(
@@ -349,6 +462,8 @@ export async function runNative(directory: string) {
       T: 6,
       tip: gateway.tip,
       observed,
+      completionChecks,
+      prefixOffers,
       native: native.identity,
       scope:
         "real isolated child process and sockets; intact file reconstruction; no deployment isolation/fsync/P5 guarantee",
@@ -359,6 +474,8 @@ export async function runNative(directory: string) {
     await gateway?.close();
     await proxy.stop();
     await native.stop();
-    writeFileSync(join(directory, "trace.json"), canonical(trace), { flag: "wx" });
+    writeFileSync(join(directory, "trace.json"), canonical(trace), {
+      flag: "wx",
+    });
   }
 }

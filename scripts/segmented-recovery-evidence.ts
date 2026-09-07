@@ -41,7 +41,13 @@ const cases = [
   "bounded-work",
   "semantic-boundaries",
 ];
-const gates = { G1: "unpassed", G2: "unpassed", G3: "unpassed", G4: "unpassed", G5: "unpassed" };
+const gates = {
+  G1: "unpassed",
+  G2: "unpassed",
+  G3: "unpassed",
+  G4: "unpassed",
+  G5: "unpassed",
+};
 export function segmentedProfile() {
   const p = JSON.parse(readFileSync(profilePath, "utf8")) as {
     schema: string;
@@ -270,7 +276,41 @@ export function verifySegmentedFiles(e: SegmentedEvidence, directory: string) {
       assert.equal(observed.native.source, protocolProfile().native.source);
       assert.equal(observed.native.binarySha256, protocolProfile().native.binarySha256);
       assert.equal(observed.native.configSha256, e.native["strfry/strfry.conf"]);
-      assert.equal(observed.observed.length, 8);
+      assert.equal(observed.observed.length, 11);
+      assert.deepEqual(
+        observed.completionChecks.map((c: any) => c.label),
+        [
+          "unuploaded-root",
+          "unuploaded-root-reconstructed",
+          "uncertain",
+          "uncertain-reconstructed",
+          "suppressed-root",
+          "substituted-root",
+          "suppressed-order",
+          "substituted-order",
+          "suppressed-declaration",
+          "substituted-declaration",
+        ],
+      );
+      for (const c of observed.completionChecks) {
+        assert.equal(c.completed, 0);
+        assert.equal(c.reserved, true);
+        assert.equal(c.chargedBytes, observed.reservedBytes);
+      }
+      assert.deepEqual(
+        observed.prefixOffers.map((o: any) => [
+          o.requestedPrefix,
+          o.retainedPrefix,
+          o.sealedPrefix,
+          o.suffixAvailable,
+        ]),
+        [
+          [6, 6, 6, true],
+          [7, 6, 6, false],
+          [7, 6, 6, false],
+          [7, 7, 6, false],
+        ],
+      );
       assert.equal(observed.segments.length, 3);
       assert(observed.pageCount > 3 && observed.T === 6 && observed.F > observed.T);
       assert.equal(observed.node, e.context.protocol.ordered.preflight.baseline.runtime.node);

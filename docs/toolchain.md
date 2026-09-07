@@ -332,3 +332,15 @@ that skipped typechecking. The corrected verifier requires all six exact command
 records/logs and their full argument contracts. The original positive run and
 both accepted malformed probes remain retained; a fresh corrected-head full run
 and repeated rejection checks are required before review.
+
+Independent review of `d358c20...` passed the full 115-test runner but found two
+additional real native failures. Experiment `bfe40d81...` completed a recovery
+checkpoint while its root remained only an anticipated upload; experiment
+`31e5ce0b...` marked a requested suffix beyond F as available. Both rejected-head
+experiments remain under `artifacts/segmented-recovery/reviewer-experiments/`.
+The correction requires confirmed exact backend readback of every planned
+identity and the separately charged declaration, and computes suffix availability
+against the original request. The existing native case now retains omitted,
+uncertain, reconstructed, suppressed and substituted completion failures plus
+explicit frontier offers. Fresh complete validation and independent review are
+required; these are eligibility corrections, with all full gates still closed.

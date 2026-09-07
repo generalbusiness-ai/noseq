@@ -176,6 +176,11 @@ Prepared reservations transfer to per-identity native reservations without
 double charging. Lost native ACK/EOSE retains conservative charges across retry
 and intact reconstruction. Only complete actual readback permits the retained
 checkpoint response; client verification is a separate required result.
+Completion reads every planned exact identity through the selected backend,
+including the root and original orders, and compares the stored bytes with
+their confirmed reservation. Constructor-held proofs and a local journal alone
+cannot establish that retention. The separately charged declaration must also
+be confirmed and read back. A failed read preserves preparation and charges.
 Invalid opaque crypto stalls at the last-good prefix. Production coupling to
 DO transactions, durable outbox scheduling and fsync remains P4/P5/P6.
 
@@ -293,6 +298,9 @@ available. An exact checkpoint ID cannot silently select an older one.
 public closure ID index and rejects any requested object outside that checkpoint.
 Every queued frame uses the base current-membership/fence check immediately
 before `send`. No client plaintext/grant keys are disclosed to the gateway.
+`suffixAvailable` means the offered sealed prefix reaches the caller's actual
+requested position. It is false when that request exceeds F, even if T equals
+F; clamping checkpoint selection to F does not change what the caller requested.
 
 The native test verifies the prepared private archive before requesting stronger
 retention, refuses a signed T=6 while F=5 until the last ordered entry arrives,
@@ -306,6 +314,13 @@ interrupted transfer. The production ceiling remains 256 MiB; this is not a
 256 MiB physical-store or 10,000-event benchmark. Uploads are sequential, with at
 most one event/frame in the publisher's active outbox, below the unchanged
 64 MiB ceiling. Durable outbox scheduling remains P4/P5.
+
+Completion regressions omit the root entirely, lose its native EOSE, and
+reconstruct both incomplete states before exact retry. They suppress or
+substitute already retained root, original order and declaration bytes during
+completion. None advances T or refunds the reservation. Separate socket cases
+cover requests below the first eligible T, exactly at T=F, beyond F, an unsealed
+retained suffix, and an exact checkpoint whose closure is still unavailable.
 
 A later unsealed suffix cannot leak through an older checkpoint. A learned
 removal with a lost native ACK blocks subsequent old-history pages before
