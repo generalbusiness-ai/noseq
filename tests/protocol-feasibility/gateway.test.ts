@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "vitest";
 import { Gateway } from "./gateway.ts";
-import { startNative, Peer, pause, type Frame } from "./gateway-native.ts";
+import { startNative, readbackProxy, Peer, pause, type Frame } from "./gateway-native.ts";
 import { setup, apply } from "./scenarios.ts";
 import { createArchive, encrypt, decrypt, deliverKey, receiveKey, VerifiedArchive, type Archive, type Encrypted } from "./archive.ts";
 import { add, remove, entry } from "./crypto.ts";
@@ -28,9 +28,9 @@ async function caseRun(id: string, execute: (directory: string, trace: Frame[], 
     writeFileSync(join(run, `gateway-${id}.json`), JSON.stringify({ name: id, status, error, node: process.versions.node, trace, notes, native: resources.natives.map(n => n.identity), scope: "isolated local socket feasibility; no G5 gate or production persistence pass" }), { flag: "wx" });
   }
 }
-async function world(directory: string, trace: Frame[], r: { natives: Native[]; gateways: Gateway[]; peers: Peer[] }) {
+async function world(directory: string, trace: Frame[], r: { natives: Native[]; gateways: Gateway[]; peers: Peer[] }, backend?: (url:string)=>Promise<string>) {
   const w = await setup(); const n = await startNative(join(directory, "native")); r.natives.push(n);
-  const g = new Gateway(w.g.context, w.g.event, join(directory, "gateway-state.json"), w.starting, founder(w), [publicKey(key(50))], trace); await g.start(n.url); r.gateways.push(g);
+  const g = new Gateway(w.g.context, w.g.event, join(directory, "gateway-state.json"), w.starting, founder(w), [publicKey(key(50))], trace); await g.start(backend ? await backend(n.url) : n.url); r.gateways.push(g);
   const op = await Peer.connect(g.operatorUrl, "operator", trace); r.peers.push(op); assert.equal((await op.auth(key(50), g.operatorUrl))[2], true);
   const ingest = async (e: Signed, expected = true) => { op.send(["EVENT", e]); const ok = await op.take(m => m[0] === "OK" && m[1] === e.id); assert.equal(ok[2], expected, JSON.stringify(ok)); return ok; };
   await ingest(w.journal.events[0]!);
@@ -189,4 +189,47 @@ test("feasibility.gateway.G5-F08",()=>caseRun("G5-F08",async(d,trace,r,notes)=>{
   const fresh=await x.reader(key(32),"queue-reader");x.g.paused=true;for(let i=0;i<129;i++)fresh.send(["REQ","q",x.filter()]);await fresh.take(m=>m[0]==="CLOSED"&&m[1]==="q");x.g.resume();
   const oversize=await x.reader(key(32),"oversized-frame");oversize.send(["REQ","over",{blob:"x".repeat(limits.frame)}]);await Promise.race([new Promise<void>(resolve=>oversize.socket.once("close",()=>resolve())),pause(2000)]);assert.equal(oversize.closed,true);
   notes.push({replicatorKeySeparateFromSequencer:true,protectedEvent:"unsupported/refused without stripping; bare author-authenticated path measured separately",retentionRefusal:true,originalRetained:before,aggregateAccounting:{accounted,retainedIdentities:5,supersededDeclarationStillRetained:firstClosure.id,allThreeRoutesRefusedAtBoundary:true,duplicateRetriesUncharged:true,reconstructedCounterMatches:true,nativeRefusedIdsAbsent:true},limits: x.g.metadata(),remaining:"production retry scheduling, physical capacity and independent failure domains remain P5"});
+}));
+
+test("feasibility.gateway.G5-F09",()=>caseRun("G5-F09",async(d,trace,r,notes)=>{
+  const proxies:Awaited<ReturnType<typeof readbackProxy>>[]=[];
+  const make=async(name:string)=>{const path=join(d,name);mkdirSync(path);let proxy:Awaited<ReturnType<typeof readbackProxy>>|undefined;const x=await world(path,trace,r,async url=>{proxy=await readbackProxy(url,trace);proxies.push(proxy);return proxy.url;});return {...x,proxy:proxy!};};
+  type FaultWorld=Awaited<ReturnType<typeof make>>;
+  const request=async(p:Peer,route:string,e:Signed,outcome:"ok"|"notice"|"failed"="ok")=>{p.send([route,e]);const reply=await p.take(m=>outcome==="notice"?m[0]==="NOTICE":m[0]==="OK"&&m[1]===e.id,7000);if(outcome!=="notice")assert.equal(reply[2],outcome==="ok");return reply;};
+  const usage=(g:Gateway)=>Object.values(g.data.reservations).reduce((n,e)=>n+Buffer.byteLength(eventBytes(e)),0);
+  const rebuild=async(x:FaultWorld,label:string)=>{const path=join(d,label+"-reconstructed.json");writeFileSync(path,readFileSync(x.g.statePath));const g=new Gateway(x.w.g.context,x.w.g.event,path,x.w.starting,founder(x.w),[publicKey(key(50))],trace);g.loadIntact();assert.equal(g.journalBytes,usage(g));await g.start(x.proxy.url);r.gateways.push(g);const op=await Peer.connect(g.operatorUrl,label+"-operator",trace);r.peers.push(op);await op.auth(key(50),g.operatorUrl);return {g,op};};
+  const denied=async(x:FaultWorld,g:Gateway,label:string)=>{const p=await Peer.connect(g.url,label,trace);r.peers.push(p);await p.auth(key(32),g.url);p.send(["REQ","old",x.filter({noseq_tip:x.w.journal.events[0]!.id})]);await p.take(m=>m[0]==="CLOSED"&&m[1]==="old");p.send(["NOSEQ-CLOSURE","closure",x.w.journal.events[0]!.id]);await p.take(m=>m[0]==="CLOSED"&&m[1]==="closure");assert(!p.messages.some(m=>m[0]==="EVENT"));};
+  const resumed=async(x:FaultWorld,g:Gateway,label:string)=>{await denied(x,g,label+"-bob");const p=await Peer.connect(g.url,label+"-owner",trace);r.peers.push(p);await p.auth(key(31),g.url);p.send(["REQ","accepted",x.filter()]);await p.take(m=>m[0]==="EOSE"&&m[1]==="accepted");assert.equal(p.messages.filter(m=>m[0]==="EVENT"&&m[1]==="accepted").length,Math.min(g.data.events.length,limits.pageEvents));};
+  try{
+    const x=await make("object-uncertainty");const object=async()=>sign(x.w.owner.keys.deviceKey,"chunk",x.w.g.context,await encrypt({payload:"same-length synthetic ciphertext"},hex(random()),x.w.g.context,1,x.w.g.context.definition));
+    const a=await object(),b=await object();const bytes=Buffer.byteLength(eventBytes(a));assert.equal(bytes,Buffer.byteLength(eventBytes(b)));const actualBefore=usage(x.g);x.g.journalBytes=limits.journal-bytes;x.proxy.dropEose.add(a.id);
+    await request(x.op,"OBJECT",a,"notice");assert.equal(x.g.journalBytes,limits.journal);assert(x.g.data.reservations[a.id]);assert(!x.g.data.retained[a.id]&&!x.g.data.objects[a.id]);
+    x.proxy.dropEose.delete(a.id);await request(x.op,"OBJECT",b,"notice");assert(!x.g.data.reservations[b.id]);
+    const restored=await rebuild(x,"uncertain-object");assert.equal(restored.g.journalBytes,actualBefore+bytes);assert(restored.g.data.reservations[a.id]&&!restored.g.data.retained[a.id]);
+    restored.g.journalBytes=limits.journal;await request(restored.op,"OBJECT",a);assert.equal(restored.g.journalBytes,limits.journal);assert(restored.g.data.retained[a.id]&&restored.g.data.objects[a.id]);await request(restored.op,"OBJECT",a);assert.equal(restored.g.journalBytes,limits.journal);
+    const native=await Peer.connect(x.n.url,"fault-native-inventory",trace);r.peers.push(native);native.send(["REQ","quota-identities",{ids:[a.id,b.id],limit:10}]);await native.take(m=>m[0]==="EOSE"&&m[1]==="quota-identities");assert.deepEqual(native.messages.filter(m=>m[0]==="EVENT"&&m[1]==="quota-identities").map(m=>(m[2] as Signed).id),[a.id]);
+    notes.push({route:"OBJECT",withheld:"actual native EOSE after acceptance",availableInjectedBytes:bytes,uncertaintyCharged:true,nextIdentityRefused:b.id,exactRetryAtCapUncharged:true,reconstructedReservation:a.id,reservationIsNotCoverage:true});
+
+    const z=await make("closure-uncertainty");const archive=await createArchive(z.w.owner,z.w.g.event,z.w.definition,z.w.starting);const objectZ=sign(z.w.owner.keys.deviceKey,"chunk",z.w.g.context,await encrypt(archive,hex(random()),z.w.g.context,1,archive.checkpoint.id));await request(z.op,"OBJECT",objectZ);
+    const closure=sign(key(31),"proof",z.w.g.context,{type:"retention-closure",tip:z.g.tip,checkpoint:archive.checkpoint,ids:[objectZ.id]});const previousBytes=z.g.journalBytes;z.proxy.dropAck.add(closure.id);await request(z.op,"CLOSURE",closure,"notice");z.proxy.dropAck.delete(closure.id);assert.equal(z.g.journalBytes,previousBytes+Buffer.byteLength(eventBytes(closure)));assert(z.g.data.reservations[closure.id]&&!z.g.data.retained[closure.id]);assert(!z.g.data.closures[z.g.tip]);
+    const reader=await z.reader(key(32),"uncertain-closure-reader");reader.send(["NOSEQ-CLOSURE","uncertain",z.g.tip]);await reader.take(m=>m[0]==="NOTICE");assert(!reader.messages.some(m=>m[0]==="NOSEQ-COMPLETE"));
+    const zr=await rebuild(z,"uncertain-closure");const charged=zr.g.journalBytes;await request(zr.op,"CLOSURE",closure);assert.equal(zr.g.journalBytes,charged);assert.equal(zr.g.data.closures[z.g.tip]!.id,closure.id);
+    notes.push({route:"CLOSURE",withheld:"actual native OK after acceptance",reserved:closure.id,reconstructedChargedBytes:charged,uncertainDeclarationCannotClaimCompletion:true,exactRetryUncharged:true});
+
+    for(const mode of ["readback-timeout","quota-full"]){
+      const y=await make("removal-"+mode);const bob=await y.reader(key(32),"live-before-"+mode);await y.history(bob,"live");const released=y.g.released.length;y.g.paused=true;bob.send(["REQ","queued",y.filter({noseq_tip:y.g.tip})]);await pause(20);
+      const c=await y.w.owner.stageCommit([remove(y.w.owner,y.w.bobDevice)]);const removal=await y.w.journal.append(c.event,c.admission);await y.w.owner.receive(removal);
+      if(mode==="readback-timeout")y.proxy.dropEose.add(removal.id);else y.g.journalBytes=limits.journal;
+      await request(y.op,"EVENT",removal,"failed");y.proxy.dropEose.delete(removal.id);await bob.take(m=>m[0]==="CLOSED"&&m[1]==="queued");y.g.resume();await pause(20);assert.equal(y.g.released.length,released);assert.equal(y.g.tip,y.w.journal.events[0]!.id);assert.equal(y.g.data.knownControl?.id,removal.id);assert.equal(y.g.readable,false);
+      await denied(y,y.g,"new-reader-"+mode);const yr=await rebuild(y,"known-removal-"+mode);assert.equal(yr.g.readable,false);assert.equal(yr.g.data.knownControl?.id,removal.id);await denied(y,yr.g,"reconstructed-"+mode);
+      const reservedBefore=yr.g.journalBytes;await request(yr.op,"EVENT",removal);assert.equal(yr.g.tip,removal.id);assert.equal(yr.g.data.knownControl,null);assert.equal(yr.g.journalBytes,reservedBefore+(mode==="quota-full"?Buffer.byteLength(eventBytes(removal)):0));await resumed(y,yr.g,"repaired-"+mode);
+      notes.push({route:"EVENT",mode,removal:removal.id,noNewReleasedBytesAfterLearning:true,previouslyHandedBytes:released,oldTipNotAdvancedDuringFailure:true,intactReconstructionDenied:true,exactRetryApplied:true,admittedOwnerResumed:true,quotaFault:"configured logical counter injection; reconstruction removes the injected baseline, not a real quota charge"});
+    }
+
+    const full=await make("full-pending-buffer");const missing=await apply(full.w,full.w.owner,"missing before full buffer",[full.w.owner]);
+    for(let i=0;i<limits.pageEvents;i++){const e=await apply(full.w,full.w.owner,"full pending "+i,[full.w.owner]);await full.ingest(e,false);}assert.equal(full.g.buffer.size,limits.pageEvents);
+    const c=await full.w.owner.stageCommit([remove(full.w.owner,full.w.bobDevice)]);const removal=await full.w.journal.append(c.event,c.admission);await full.w.owner.receive(removal);await full.ingest(removal,false);assert.equal(full.g.buffer.size,limits.pageEvents);assert.equal(full.g.data.knownControl?.id,removal.id);assert.equal(full.g.readable,false);
+    const fr=await rebuild(full,"full-pending");await denied(full,fr.g,"full-buffer-bob");fr.op.send(["EVENT",missing]);assert.equal((await fr.op.take(m=>m[0]==="OK"&&m[1]===missing.id,20000))[2],true);assert.equal(fr.g.tip,removal.id);assert.equal(fr.g.data.knownControl,null);assert.equal(fr.g.buffer.size,0);await resumed(full,fr.g,"full-buffer-repaired");
+    notes.push({fullPendingBuffer:limits.pageEvents,separateBoundedControlFence:removal.id,failureRemainsClosedAcrossReconstruction:true,exactDependencyFillDrainsAndAppliesControl:true});
+  }finally{for(const proxy of proxies)await proxy.stop();}
 }));

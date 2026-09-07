@@ -8,7 +8,8 @@ import { entry, publicTransition, checkMembers, type PublicState } from "./crypt
 import { authenticate, type Session } from "./policies.ts";
 import { canonical, clone, equal, eventBytes, fields, hex, hex32, integer, limits, parse, random, read, readGenesis, unb64, type Signed, type Context } from "./wire.ts";
 
-interface Stored { events: Signed[]; objects: Record<string, Signed>; closures: Record<string, Signed>; retained: Record<string, Signed>; pending: Signed[]; initial: PublicState; public: PublicState; fork: boolean }
+interface Stored { events: Signed[]; objects: Record<string, Signed>; closures: Record<string, Signed>; reservations: Record<string, Signed>; retained: Record<string, Signed>; pending: Signed[]; knownControl: Signed | null; initial: PublicState; public: PublicState; fork: boolean }
+interface Saved { events: string[]; objects: string[]; closures: Record<string,string>; reservations: Signed[]; retained: string[]; pending: Signed[]; knownControl: Signed | null; initial: PublicState; public: PublicState; fork: boolean }
 interface Filter { kinds: number[]; ids?: string[]; limit: number; "#h": string[]; "#i": string[]; "#d": string[]; noseq_tip?: string }
 interface Reader { socket: WebSocket; auth: Session; subscriptions: Map<string, Filter[]>; blocked: Set<string>; queue: { subscription: string; message: unknown[] }[]; queuedBytes: number; draining: boolean; operator: boolean }
 export class Gateway {
@@ -21,7 +22,7 @@ export class Gateway {
     fields(initial,["version","epoch","members"]); assert.equal(initial.version,0); assert.equal(initial.epoch,0); checkMembers(initial.members); assert.equal(initial.members.length,1);
     const proof=read(eventBytes(founder),"proof",ctx); assert.equal(proof.pubkey,ctx.owner); const binding=parse(proof.content); fields(binding,["type","device","suite","leaf"]); assert.equal(binding.type,"account-leaf"); assert.equal(binding.suite,1);
     equal(initial.members[0],{account:ctx.owner,device:binding.device,leaf:binding.leaf},"owner-signed founder binding");
-    this.data = { events: [], objects: {}, closures: {}, retained: {}, pending: [], initial: clone(initial), public: clone(initial), fork: false }; this.restoredFence = restored;
+    this.data = { events: [], objects: {}, closures: {}, reservations: {}, retained: {}, pending: [], knownControl: null, initial: clone(initial), public: clone(initial), fork: false }; this.restoredFence = restored;
   }
   get tip(): string { return this.data.events.at(-1)?.id ?? this.ctx.genesis; }
   get readable(): boolean { return !this.restoredFence && !this.controlGap && !this.data.fork; }
@@ -29,28 +30,36 @@ export class Gateway {
   private mayWrite(r: Reader): boolean { return r.operator && r.auth.authenticated.some(k => k === this.ctx.sequencer || this.replicas.includes(k)); }
   private persist(): void {
     this.data.pending = [...this.buffer.values()].map(clone);
-    writeFileSync(this.statePath + ".next", canonical(this.data)); renameSync(this.statePath + ".next", this.statePath);
+    // Store each signed reservation once; confirmed retention and public indexes refer to exact IDs.
+    const saved: Saved = {...this.data,events:this.data.events.map(e=>e.id),objects:Object.keys(this.data.objects),closures:Object.fromEntries(Object.entries(this.data.closures).map(([tip,e])=>[tip,e.id])),reservations:Object.values(this.data.reservations),retained:Object.keys(this.data.retained)};
+    writeFileSync(this.statePath + ".next", canonical(saved)); renameSync(this.statePath + ".next", this.statePath);
   }
   loadIntact(): void {
-    // Each retained event occurs at most twice (inventory plus index), with bounded pending events and roster overhead.
-    const stateLimit = 3 * limits.journal + limits.pageEvents * limits.event + 1_048_576;
+    // One signed reservation plus ID indexes, a bounded pending buffer and one separate highest-control fence.
+    const stateLimit = 2 * limits.journal + (limits.pageEvents + 1) * limits.event + 1_048_576;
     assert(statSync(this.statePath).size <= stateLimit, "gateway state envelope");
-    const data = parse(readFileSync(this.statePath, "utf8"), stateLimit) as unknown as Stored;
-    fields(data,["events","objects","closures","retained","pending","initial","public","fork"]);
-    assert(Array.isArray(data.events) && Array.isArray(data.pending)); assert.equal(typeof data.fork,"boolean");
-    let state = clone(data.initial), previous = this.ctx.genesis;
-    equal(state, this.data.initial, "restored root roster");
-    for (const [i, signed] of data.events.entries()) { const e = entry(signed, this.ctx); assert.equal(e.position, i + 1); assert.equal(e.previous, previous); state = publicTransition(this.ctx, state, e); previous = signed.id; }
-    equal(state, data.public, "restored authority mismatch");
+    const saved = parse(readFileSync(this.statePath, "utf8"), stateLimit) as unknown as Saved;
+    fields(saved,["events","objects","closures","reservations","retained","pending","knownControl","initial","public","fork"]);
+    for(const values of [saved.events,saved.objects,saved.reservations,saved.retained,saved.pending]) assert(Array.isArray(values)); assert.equal(typeof saved.fork,"boolean");
+    const reservations: Record<string,Signed> = {}, retained: Record<string,Signed> = {};
     let total = 0;
-    for (const [id, signed] of Object.entries(data.retained)) {
-      assert.equal(id,signed.id); const kind = signed.kind === 8792 ? "order" : signed.kind === 8795 ? "chunk" : "proof";
+    for (const signed of saved.reservations) {
+      assert(!reservations[signed.id],"duplicate reservation"); const kind = signed.kind === 8792 ? "order" : signed.kind === 8795 ? "chunk" : "proof";
       read(eventBytes(signed),kind,this.ctx); total += Buffer.byteLength(eventBytes(signed)); assert(total <= limits.journal,"restored retention quota");
+      reservations[signed.id]=signed;
     }
-    for (const signed of [...data.events,...Object.values(data.objects),...Object.values(data.closures)]) equal(data.retained[signed.id],signed,"missing retained inventory");
+    for(const id of saved.retained){hex32(id);assert(reservations[id]&&!retained[id],"invalid retained reservation");retained[id]=reservations[id]!;}
+    const confirmed=(id:string)=>{hex32(id);assert(retained[id],"unconfirmed public inventory");return retained[id]!;};
+    assert.equal(new Set(saved.objects).size,saved.objects.length);
+    const data: Stored={...saved,reservations,retained,events:saved.events.map(confirmed),objects:Object.fromEntries(saved.objects.map(id=>[id,confirmed(id)])),closures:Object.fromEntries(Object.entries(saved.closures).map(([tip,id])=>[tip,confirmed(id)]))};
+    let state = clone(data.initial), previous = this.ctx.genesis; equal(state,this.data.initial,"restored root roster");
+    for(const[i,signed]of data.events.entries()){const e=entry(signed,this.ctx);assert.equal(e.position,i+1);assert.equal(e.previous,previous);state=publicTransition(this.ctx,state,e);previous=signed.id;}
+    equal(state,data.public,"restored authority mismatch");
     assert(data.pending.length <= limits.pageEvents); const pending = new Map<number,Signed>();
     for (const signed of data.pending) { const e=entry(signed,this.ctx); assert(e.position > data.events.length && !pending.has(e.position),"invalid pending position"); pending.set(e.position,clone(signed)); }
-    this.data = data; this.buffer = pending; this.controlGap = [...pending.values()].some(e=>entry(e,this.ctx).admission !== null);
+    if(data.knownControl){const e=entry(data.knownControl,this.ctx);assert(e.admission&&e.position>data.events.length,"invalid known-control fence");}
+    for(const signed of pending.values()){const e=entry(signed,this.ctx);if(e.admission)assert(data.knownControl&&entry(data.knownControl,this.ctx).position>=e.position,"lost pending-control fence");}
+    this.data = data; this.buffer = pending; this.controlGap = data.knownControl !== null;
     this.journalBytes = total; // Intact-file reconstruction; no fsync/crash guarantee.
   }
   metadata() { return { name: "Noseq isolated prefix gateway", supported_nips: [1, 11, 42], limitation: { max_message_length: limits.frame, max_subscriptions: limits.subscriptions, max_limit: limits.pageEvents, max_event_tags: limits.tags, max_content_length: limits.event, auth_required: true, restricted_writes: true }, noseq: { policy: "highest-verified-retained-prefix", status: "development-fixture", normal_history: true, public_count: false, public_negentropy: false } }; }
@@ -73,12 +82,20 @@ export class Gateway {
   }
   private async backendPut(e: Signed): Promise<void> { assert(this.backend); this.backend.send(["EVENT", e]); const ok = await this.backend.take(m => m[0] === "OK" && m[1] === e.id); assert.equal(ok[2], true, "backend refused retention"); }
   private async retain(e: Signed): Promise<void> {
-    const previous = this.data.retained[e.id]; if (previous) equal(previous,e,"retained identity changed");
+    const previous = this.data.reservations[e.id]; if (previous) equal(previous,e,"reserved identity changed");
     const added = previous ? 0 : Buffer.byteLength(eventBytes(e));
     assert(this.journalBytes + added <= limits.journal,"retention full; no eviction");
-    // Commands run on one serial tail: reserve/check before native retention; retries repair missing bytes without a second charge.
+    // Conservative reservation survives ordinary ACK/readback failure; no automatic refund claims non-retention.
+    if(!previous){this.data.reservations[e.id]=clone(e);this.journalBytes+=added;this.persist();}
     await this.backendPut(e); equal(await this.backendGet(e.id),e,"backend retention/readback changed");
-    if (!previous) { this.data.retained[e.id] = clone(e); this.journalBytes += added; }
+    this.data.retained[e.id]=this.data.reservations[e.id]!;this.persist();
+  }
+  private learnControl(signed:Signed):void{
+    const e=entry(signed,this.ctx);if(!e.admission)return;
+    const known=this.data.knownControl?entry(this.data.knownControl,this.ctx):null;
+    if(known&&known.position===e.position&&this.data.knownControl!.id!==signed.id){this.data.fork=true;this.persist();this.cancelUnauthorized();throw new Error("observed known-control fork");}
+    if(!known||e.position>known.position)this.data.knownControl=clone(signed);
+    this.controlGap=true;this.persist();this.cancelUnauthorized(); // Before any await or capacity refusal, without advancing retained authority.
   }
   private async backendGet(id: string): Promise<Signed> {
     assert(this.backend); const sub = "private-" + ++this.backendRequest; this.backend.send(["REQ", sub, { ids: [id], limit: 1 }]);
@@ -89,13 +106,14 @@ export class Gateway {
     const e = entry(signed, this.ctx); const previous = this.data.events[e.position - 1];
     if (previous) { if (previous.id !== signed.id) { this.data.fork = true; this.persist(); this.cancelUnauthorized(); throw new Error("observed fork"); } await this.retain(signed); this.persist(); return; }
     if (this.buffer.has(e.position) && this.buffer.get(e.position)!.id !== signed.id) { this.data.fork = true; this.persist(); this.cancelUnauthorized(); throw new Error("observed buffered fork"); }
-    if (e.position > this.data.events.length + 1) { assert(this.buffer.has(e.position) || this.buffer.size < limits.pageEvents, "gap buffer full"); this.buffer.set(e.position, clone(signed)); if (e.admission) this.controlGap = true; this.persist(); this.cancelUnauthorized(); return; }
+    if (e.position > this.data.events.length + 1) { this.learnControl(signed);assert(this.buffer.has(e.position) || this.buffer.size < limits.pageEvents, "gap buffer full"); this.buffer.set(e.position, clone(signed)); this.persist(); this.cancelUnauthorized(); return; }
     assert.equal(e.previous, this.tip, "predecessor mismatch"); const next = publicTransition(this.ctx, this.data.public, e);
-    await this.retain(signed); this.buffer.delete(e.position); this.data.events.push(clone(signed)); this.data.public = clone(next); this.persist();
+    this.learnControl(signed);await this.retain(signed); this.buffer.delete(e.position); this.data.events.push(clone(signed)); this.data.public = clone(next);
+    if(this.data.knownControl?.id===signed.id)this.data.knownControl=null;this.controlGap=this.data.knownControl!==null;this.persist();
     this.cancelUnauthorized(); // This is the authorization cutoff, before any corresponding live queue item.
     for (const r of this.readers) for (const [sub, f] of r.subscriptions) if (f.some(filter => this.matches(signed, filter) && !filter.noseq_tip)) this.enqueue(r, sub, ["EVENT", sub, signed]);
-    const buffered = this.buffer.get(this.data.events.length + 1); if (buffered) await this.ingest(buffered);
-    this.controlGap = [...this.buffer.values()].some(e => entry(e, this.ctx).admission !== null); this.cancelUnauthorized();
+    const buffered = this.buffer.get(this.data.events.length + 1) ?? (this.data.knownControl&&entry(this.data.knownControl,this.ctx).position===this.data.events.length+1?this.data.knownControl:null); if (buffered) await this.ingest(buffered);
+    this.cancelUnauthorized();
   }
   private filter(x: unknown): Filter {
     assert(x && typeof x === "object" && !Array.isArray(x)); const f = x as Record<string, unknown>;

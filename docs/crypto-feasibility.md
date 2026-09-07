@@ -421,7 +421,7 @@ The new paths exercise ordinary Nostr signed account/device/leaf bindings,
 provisional Commit/Welcome, one owner-admission boundary, competing changes,
 interleaved applications, full-prefix recovery, explicit cipher/identity/coverage
 negatives, multi-device removal, local-key failure isolation, strict wire bytes,
-encoded resource expansion and a pure private-relay policy model. Fifteen named
+encoded resource expansion and a pure private-relay policy model. Sixteen named
 cases run in each real client runtime. The prerequisite P1b removal fixture
 retains the actual removal Commit, terminal result, direct future crypto failure
 and non-removing positive control required by its independent review.
@@ -441,7 +441,7 @@ The local pinned strfry build now permits real acceptance/readback tests. It
 reproduces the 64 KiB default event limit, full-frame overhead at 128 KiB, and
 unauthenticated COUNT leakage despite a denied restricted-kind REQ. The latter
 is a negative infrastructure result. An independent membership gateway/private
-store now has eight real isolated socket cases. The ratified investigation
+store now has nine real isolated socket cases. The ratified investigation
 selects highest verified retained-prefix membership, explicitly permitting old
 history through 40 after an unseen removal at 41. Known removals cut off queued
 and subsequent output, and stale restores require external reconciliation.
@@ -464,3 +464,10 @@ reconstruct the counter. Dedicated archive max/+1 vectors also delimit the
 128-entry/16 MiB export capability. **G2-LONG-HISTORY** remains an open adoption
 decision for authenticated segment composition over larger admitted histories;
 no smaller instance lifetime or Plan 001 workload change has been selected.
+
+The follow-up review exposed the corresponding failure-path gaps after native
+acceptance with a lost response. The candidate now persists conservative
+per-identity reservations before publication and keeps verified contiguous
+control denial before a fallible quota/retention step. Real lost-response,
+reconstruction, retry and full-buffer controls are required in G5-F09. Earlier
+passing records do not establish those later requirements.

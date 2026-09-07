@@ -271,7 +271,7 @@ export; it never truncates the advertised prefix. Large archive transport and
 retention behavior remain P5/P6 work.
 
 `probe:protocol-feasibility` can exit zero only for the exact required bounded
-observations, including P0 and P1a/P1b prerequisites, 32 client cases, eight real local
+observations, including P0 and P1a/P1b prerequisites, 32 client cases, nine real local
 gateway cases and the native relay limitation observations. `verify:protocol-feasibility` revalidates source/tree, locks,
 fixture/document/profile/library bytes, runtime, raw reports, every mandatory
 case, generated browser bundle and native inputs/results. Runs have unique UUIDs

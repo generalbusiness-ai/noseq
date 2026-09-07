@@ -6,7 +6,7 @@ date: 2026-09-07
 
 The pinned bare strfry relay does not implement the proposal's dynamic reader
 policy. P1c now executes a small real WebSocket gateway over network-private
-strfry, eight socket scenarios, a pure policy model and native size/COUNT/NEG
+strfry, nine socket scenarios, a pure policy model and native size/COUNT/NEG
 observations. These are isolated feasibility results, not a deployed service,
 production persistence or a G5/P5 pass.
 
@@ -88,14 +88,15 @@ learned old plaintext. They must remain visible in the privacy statement.
 The gateway verifies trusted genesis, an owner-signed founder binding, owner
 admission/control signatures, their exact ciphertext submission identity and
 sequencer-signed contiguous order before advancing transport authority. It
-holds gaps; a known out-of-order control conservatively disables reads until
-reconciled. Conflicting observed positions halt. A half-control cannot advance
+holds gaps; any verified owner control conservatively disables reads before
+fallible retention, until its contiguous retained prefix is reconciled. Conflicting observed positions halt. A half-control cannot advance
 admission. This publicly verified transport authorization is distinct from the
 owner-attested private MLS control-history trust in the G2 archive.
 
-The read cutoff is synchronous: after retention/readback and public control
-verification, update and persist the authority frontier, discard unsent queues
-and subscriptions for removed readers, then permit live enqueue. Every dequeue
+The read cutoff is synchronous: persist verified control knowledge and discard
+unsent queues/subscriptions before native publication, a quota check or an
+awaited response can fail. Successful retention/readback then advances the
+authority frontier; only readers still authorized there may resume. Every dequeue
 checks membership again immediately before `ws.send`, with no intervening await.
 Bytes already handed to the socket are in flight and cannot be recalled. G5-F04
 pauses actual output queues, learns removal, verifies their cancellation and
@@ -105,7 +106,12 @@ older data tips never lower the authorization frontier.
 G5-F06 reconstructs an intact JSON control file, preserving both accepted
 removals and verified out-of-order control knowledge. The bounded signed pending
 buffer is persisted before a buffered reply; reconstruction verifies it and keeps
-reads disabled until its dependencies produce a contiguous verified prefix. Old
+reads disabled until its dependencies produce a contiguous verified prefix. A
+separate highest known signed control preserves the denial even when the pending
+buffer is full. G5-F09 also covers contiguous removals whose retention fails,
+including quota refusal and a lost readback response, before and after intact
+reconstruction. Exact retry or dependency fill can resume permitted readers; it
+cannot restore a removed reader. Old
 cursors, closure reads and reconnected readers remain denied across that
 reconstruction. This is different from a removal that has never been seen. A
 separate **stale restore mode** starts read-disabled, requires an external
@@ -145,16 +151,22 @@ new retention/publication and expose degraded replication. Each mirror's
 acknowledgement records the exact event/prefix identity and profile; an overall
 status must distinguish local durable ACK, each replica ACK, pending retry and
 complete retained prefix. Merely listing mirror URLs is not a replication result.
-P1c accounts the exact encoded bytes of every unique ordered entry, encrypted
-object and closure declaration in one 256 MiB retention quota. Exact retries do
-not incur another charge. Replacing a tip's closure index preserves the old signed
-declaration in the retained inventory and its byte charge. All three routes
-check the aggregate quota before native publication and verify actual readback.
-Intact reconstruction recomputes usage from that inventory, including older
-declarations. The control-file envelope allows three times the journal cap plus
-the bounded pending-event buffer and 1 MiB of overhead, checked before reading;
-it is distinct from the 16 MiB archive-export limit. The redundant JSON indexes
-are an isolated fixture representation, not a production storage layout.
+P1c reserves the exact encoded bytes of every unique ordered entry, encrypted
+object and closure declaration in one 256 MiB retention quota **before** sending
+native bytes. Reserved and confirmed identities are separate. Lost ACK/readback
+responses leave the reservation charged through exact retry and intact
+reconstruction; uncertainty never certifies retained coverage. Exact retries
+reuse their reservation even at capacity. The fixture does not refund uncertain
+writes automatically: reclaiming them would need explicit reconciliation.
+Replacing a tip's closure index preserves the older signed declaration and its
+charge. All three routes verify actual readback before confirming retention.
+
+Intact reconstruction recomputes usage from all reservations, including uncertain
+writes and older declarations. The compact file stores each reserved event once
+and uses ID indexes for confirmed/public inventory. Its allocation envelope is
+twice the journal cap, plus the 128-event pending buffer, one separate control
+event and 1 MiB overhead, checked before reading. This is distinct from the
+16 MiB archive-export limit and remains a fixture storage representation.
 
 P1c tests gateway refusal, exact native retention/readback and a separately
 AUTHed replication child that exits. It does not prove crash-atomic accounting,
@@ -215,7 +227,7 @@ firewalls, containers, hosts, IPv4/IPv6 alternate ports and operational bypasses
 still require P5 verification. A trusted local operator outside that sandbox can
 reach strfry and inspect ciphertext/metadata; no decryption key is supplied.
 
-The eight socket cases do not prove physical disk exhaustion, fsync/crash
+The nine socket cases do not prove physical disk exhaustion, fsync/crash
 recovery, production retry scheduling or independently operated failover.
 Source inspection or a successful socket observation must not become such a
 claim.
@@ -243,7 +255,7 @@ backend's advertised configuration.
 | Group | 16 devices in 8 accounts | Exact roster checks, 16-device actual Commit/Welcome |
 | KeyPackage/control | 8 KiB per encoded KeyPackage, 16 proposals, 16-device roster and 128 KiB whole event | Local proposal count/encoded size checked before Commit crypto; raw event bound before MLS decode; standalone admission upload remains P8 |
 | Shared/owner archive | 128 entries, 16 MiB canonical plaintext | Export capacity refusal; additional conservative P1c bound |
-| Aggregate retained bytes | 256 MiB per instance | Ordered entries, objects and all retained closure declarations; exact-identity dedup and intact counter reconstruction. Physical capacity/crash accounting P4/P5 |
+| Aggregate retained bytes | 256 MiB per instance | Ordered entries, objects and closure declarations, including uncertain writes; exact-identity reservations and intact counter reconstruction. Physical capacity/crash accounting P4/P5 |
 | Replication outbox | 64 MiB | P4/P5 scheduling/accounting pending |
 | Connections | 32 per instance | Local gateway upgrade guard; production P4/P5 admission/accounting pending |
 | Subscriptions/filters | 4 subscriptions per connection, 4 filters per request | Actual gateway sockets validate all branches and subscriptions |
@@ -276,6 +288,13 @@ large closure pieces pause recovery; they never disappear from coverage claims.
 | G5-F06 | Intact accepted and out-of-order control-fence reconstruction, stale-restore external high-water reconciliation, gaps, half-controls and observed fork halt |
 | G5-F07 | 130 same-second entries over a 128-event cap, fixed-tip writes/dedup, real native middle-ID deletion, unavailable response and authenticated byte restore; closure holes |
 | G5-F08 | Unauthorized/foreign/protected writes, no tag stripping, subscription/filter/frame/queue limits, all-route aggregate retention refusal, uncharged retries, older-declaration accounting and reconstructed counters |
+| G5-F09 | Actual native acceptance with selectively lost ACK/EOSE, conservative object/closure reservations across retry and reconstruction, contiguous-control timeout/quota denial and resumed authority, full pending-buffer control fencing |
+
+G5-F09 inserts a transparent local WebSocket proxy that suppresses selected real
+native replies; strfry still receives and retains the original bytes. Capacity
+edges inject the logical usage counter, then reconstruction recomputes the actual
+reserved bytes. This tests ordinary failure handling, not physical disk fill,
+crashes or fsync. Previously handed socket bytes remain outside the cutoff.
 
 The sockets use ws 8.21.0 and exact local Node/native dependencies. Every case
 retains raw sent/received frames, context/frontier notes, native config/source/

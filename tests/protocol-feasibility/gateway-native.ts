@@ -3,7 +3,7 @@ import { spawn, execFileSync } from "node:child_process";
 import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
-import WebSocket from "ws";
+import WebSocket, { WebSocketServer } from "ws";
 import { sha256File } from "../../scripts/evidence.ts";
 import { canonical, signRaw, type Signed } from "./wire.ts";
 
@@ -13,6 +13,19 @@ export async function freePort(): Promise<number> {
   await new Promise<void>((resolve, reject) => s.close(e => e ? reject(e) : resolve())); return p;
 }
 export interface Frame { connection: string; direction: "send" | "receive"; message: unknown }
+// Actual sockets and unmodified native storage; selectively withhold one class of reply, never fabricate a success.
+export async function readbackProxy(backendUrl:string,trace:Frame[]) {
+  const server=new WebSocketServer({port:0,host:"127.0.0.1"});await new Promise<void>(resolve=>server.once("listening",resolve));
+  const sockets:WebSocket[]=[];const dropAck=new Set<string>(),dropEose=new Set<string>();
+  server.on("connection",front=>{
+    const back=new WebSocket(backendUrl);sockets.push(front,back);const pending:string[]=[],omit=new Set<string>();
+    front.on("error",()=>{});back.on("error",()=>front.terminate());back.on("open",()=>pending.splice(0).forEach(raw=>back.send(raw)));
+    front.on("message",bytes=>{const raw=bytes.toString(),m=JSON.parse(raw);if(m[0]==="REQ"&&m[2]?.ids?.some((id:string)=>dropEose.has(id)))omit.add(m[1]);trace.push({connection:"native-fault-proxy",direction:"send",message:m});if(back.readyState===WebSocket.OPEN)back.send(raw);else pending.push(raw);});
+    back.on("message",bytes=>{const raw=bytes.toString(),m=JSON.parse(raw);if((m[0]==="EOSE"&&omit.has(m[1]))||(m[0]==="OK"&&dropAck.has(m[1]))){trace.push({connection:"native-fault-proxy",direction:"receive",message:["suppressed",m]});return;}if(front.readyState===WebSocket.OPEN)front.send(raw);});
+    front.on("close",()=>back.close());back.on("close",()=>front.close());
+  });
+  return {url:`ws://127.0.0.1:${(server.address() as {port:number}).port}`,dropAck,dropEose,async stop(){for(const socket of sockets)socket.terminate();await new Promise<void>(resolve=>server.close(()=>resolve()));}};
+}
 export class Peer {
   messages: unknown[][] = []; closed = false;
   readonly socket: WebSocket; readonly name: string; readonly trace: Frame[];

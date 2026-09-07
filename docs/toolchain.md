@@ -187,7 +187,7 @@ and `npm run build` still work without the separate upstream source caches.
 `probe:protocol-feasibility` fetches/checks pinned reference sources, runs the P0
 harness and unchanged P1a/P1b prerequisites, checks the dedicated P1c TypeScript
 configuration, builds its actual Chromium page and runs 16 Node plus 16 Chromium
-cases, then eight actual gateway/strfry socket cases. Its browser uses free
+cases, then nine actual gateway/strfry socket cases. Its browser uses free
 loopback port 4176. The native relay probe allocates
 fresh loopback ports and stops its children. There is no deployment command.
 
@@ -262,3 +262,13 @@ exploratory run remains alongside the corrected runs; it is not an acceptance
 result. The first focused gateway retry also used a relative output path where
 the native launcher requires the runner's absolute run directory, and failed
 before service execution; the absolute-directory rerun is recorded separately.
+
+A second independent review reproduced ordinary native-response failures after
+successful publication: an object could remain uncharged, and a contiguous
+removal could leave old-history reads enabled. The retained fault experiment
+`d8d3065a-81d3-4115-9e4d-92e2e4251988` remains evidence of that rejected head.
+G5-F09 now suppresses actual native ACK/EOSE replies and checks conservative
+reservations, known-control denial, full pending-buffer behavior, intact
+reconstruction and exact retries. These checks neither simulate a successful
+backend nor claim production crash transactions. The new required case brings
+the complete local suite to 102 tests plus the native size/COUNT observation.
