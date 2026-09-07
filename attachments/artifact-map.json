@@ -1,0 +1,137 @@
+{
+  "head": "3ad487624f0537fbb4199a822a762a5a3d8cc917",
+  "artifacts": [
+    {
+      "path": "NOTICE",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b6b2469fd9bd0f8a2996ad5632efb93e18c9a40e"
+    },
+    {
+      "path": "fixtures/crypto/protocol/profile.json",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0eb9fc524beef05f8e72482e45e235a04d9df4dd"
+    },
+    {
+      "path": "package-lock.json",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:edebe060e4b7752072d34a6bfc9d21fbd19134b2"
+    },
+    {
+      "path": "package.json",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:f95be810901958e7bd39cceca33a697d21a0bbb6"
+    },
+    {
+      "path": "protocol-feasibility.config.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:895055088696c0d0e36d6fc7d042003821c26c49"
+    },
+    {
+      "path": "protocol-feasibility.playwright.config.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:30d9051feb634d766852a3dbc43ceb91aaf6fcee"
+    },
+    {
+      "path": "protocol-feasibility.vite.config.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:2e70b7e983c054361478ff26571022d33a7520cf"
+    },
+    {
+      "path": "protocol-gateway.config.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c007e3bb08cd3c692dd134a94607a71597da6537"
+    },
+    {
+      "path": "scripts/protocol-feasibility-evidence.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b5d3e0ef56438086508ab0192565dd3a287149a0"
+    },
+    {
+      "path": "scripts/protocol-feasibility.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:f86644f71842db0389929bc6273ff3c8599d66f0"
+    },
+    {
+      "path": "scripts/protocol-gates.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:758e1dd232c1e18311727b5abbaf29917bf139f2"
+    },
+    {
+      "path": "scripts/protocol-relay-probe.mjs",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b6b2d406d05b83f44dce8667e412631fc22e9016"
+    },
+    {
+      "path": "tests/harness.test.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:35592f1e4a15e5a326bda75fc2d4d9be093a7a87"
+    },
+    {
+      "path": "tests/protocol-feasibility/archive.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:49729ace1beb827d511249fec561568112ac0546"
+    },
+    {
+      "path": "tests/protocol-feasibility/browser.test.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:46133d6f5641ec2d1c996cfe2f0f38c958db6d45"
+    },
+    {
+      "path": "tests/protocol-feasibility/browser.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:1b5bb3a58033fd25aa9cdcd02a7f864dccae88bc"
+    },
+    {
+      "path": "tests/protocol-feasibility/crypto.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:cf047fececc718e9c9636e6785573123b8010c29"
+    },
+    {
+      "path": "tests/protocol-feasibility/gateway-native.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:cccf494f95b35fd1839bdaf70539633f8a7135ed"
+    },
+    {
+      "path": "tests/protocol-feasibility/gateway-replication-client.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:4047bd67520ac9a8a7b0c84d4350c5ca36ace84b"
+    },
+    {
+      "path": "tests/protocol-feasibility/gateway.test.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:e3542d3ec99d94bafe564b5584c270f103bd7b66"
+    },
+    {
+      "path": "tests/protocol-feasibility/gateway.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:567716e8dbb98bb6e02d64c21e0400745baa4f11"
+    },
+    {
+      "path": "tests/protocol-feasibility/index.html",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:d84a418c2da4353dfe4125d4ce25b4033cb98711"
+    },
+    {
+      "path": "tests/protocol-feasibility/node.test.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:bd5f43d64f2bb12fa3e6b90502e1e540af9634d2"
+    },
+    {
+      "path": "tests/protocol-feasibility/opening.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:4c3a63a3779942019728529fc0327315fa082186"
+    },
+    {
+      "path": "tests/protocol-feasibility/policies.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5da961fc09a455d1f037b3e06d6d80d16f78cde6"
+    },
+    {
+      "path": "tests/protocol-feasibility/scenarios.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:9abb78d63361caac4b0c16e5012dd2853e560ed5"
+    },
+    {
+      "path": "tests/protocol-feasibility/wire.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b03d3267efd00165d5b5b50a70e3f0ff5db105dc"
+    },
+    {
+      "path": "tsconfig.protocol-feasibility.json",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:f604410bd217f1696656ecdc261acd5883264099"
+    },
+    {
+      "path": "docs/confidentiality-and-recovery.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:665e7a15d9ec5d80952fe4cb2c6197aa4429d3e1"
+    },
+    {
+      "path": "docs/crypto-feasibility.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:367435fbe36f8c94acb665a55aeb9622b31b16ca"
+    },
+    {
+      "path": "docs/protocol-v0.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:407be1515f594f77f4abc4af99e859a3f60a603a"
+    },
+    {
+      "path": "docs/relay-profile.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0f203b028c56c30c751b9b9585e69f8dbad78b3e"
+    },
+    {
+      "path": "docs/toolchain.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b36cda65c030eb7b604a2bcac06be268fdd8fe0f"
+    }
+  ]
+}
