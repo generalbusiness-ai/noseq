@@ -1,6 +1,6 @@
 # Crypto preflight: incompatible candidate and proposed next direction
 
-Status: **P1a interim proposal; encryption profile not adopted.**
+Status: **P1a compatibility result and P1b bounded API investigation; encryption profile not adopted.**
 
 The pinned Marmot specification and candidate library do not share an identity
 proof format. The candidate also permits withdrawing an application payload
@@ -8,6 +8,10 @@ previously delivered as accepted. **Stop production use of this candidate pair.*
 The preflight reproduces those observations; it does not pass P1 or any G1–G5
 gate. A separate protocol decision must be reviewed and ratified before dependent
 production implementation.
+
+P1b investigates the pinned lower-level ts-mls API separately from the incompatible
+Marmot candidate. Its [ordered-MLS observations](#p1b-ordered-mls-api-observations)
+support continuing the investigation, with all five full gates still unpassed.
 
 ## Reproduce the observations
 
@@ -218,3 +222,189 @@ an unrotated shared group key. Stop if prefix stability, declared recovery or
 future-epoch exclusion cannot be demonstrated. Review of this document permits
 publishing the investigation and evaluating the proposal; it adopts neither
 option nor any production encryption behavior.
+
+## P1b ordered-MLS API observations
+
+**Continue the bounded investigation with this lower API. Do not adopt a production
+profile.** The development fixture reproduces provisional Commit/Welcome handling,
+authenticated winner and loser self-echo, accepted-prefix preservation, serialized
+continuation and future-message exclusion after removal. The same eight scenarios
+execute in actual Node and actual Chromium. These are 16 bounded observations;
+they do not establish the complete G1–G5 contract.
+
+```sh
+npm ci
+npm run browser:install
+npm run probe:ordered-mls
+npm run verify:ordered-mls -- artifacts/ordered-mls/runs/<uuid>/evidence.json
+```
+
+The command first reruns the unchanged P1a preflight, fetching and building the
+same exact sources and frozen dependency graph if needed. It then checks the
+separate ordered-probe TypeScript configuration, builds a development browser
+bundle, and runs eight Node plus eight Chromium cases. This browser page is a
+dedicated test fixture; the application host and Cloudflare Worker remain unchanged.
+Use a free loopback port `4175`. No relay, signing extension, cloud account or
+deployment participates.
+
+### Source choice and ownership
+
+The choice is the already pinned ts-mls fork at
+[`2ca5c43b77241245ef41a5dd834f151674877c2d`](https://github.com/hzrd149/ts-mls/tree/2ca5c43b77241245ef41a5dd834f151674877c2d),
+package version `2.0.0-rc.14`, built public entry `dist/src/index.js`.
+Its exact MIT notice is already retained in [NOTICE](../NOTICE). Source checks
+cover the exports, Commit/application/message APIs, state codecs, authentication
+service and selected provider implementations. The source revision and frozen
+P1a lock fix the full implementation; this is not a claim about a separately
+published package tarball.
+
+The fixture calls `generateKeyPackageWithKey`, `createGroup`, `createCommit`,
+`joinGroup`, `createApplicationMessage`, `processMessage`, the public state/message
+codecs and `getCiphersuiteImpl`. Ciphersuite 1 uses X25519, AES-128-GCM, SHA-256
+and Ed25519. The pinned default provider uses WebCrypto for Ed25519 when available,
+WebCrypto digest/AEAD through the selected HPKE implementation, and the pinned
+Noble/HPKE dependencies for its remaining operations. The fixture's independent
+account and order signatures use Noble BIP-340. Node and Chromium both execute
+real encryption, signature verification and decryption. Other ciphersuites,
+other browsers, browser workers and workerd crypto remain untested.
+
+Each client owns an accepted serialized MLS state and an optional separate pending
+operation. `createCommit` returns `newState`, Commit, optional Welcome and consumed
+secret buffers. The probe checks that its input state remains unchanged. It
+serializes the result before clearing returned consumed buffers; accepted bytes
+are never aliased into a call. Pending Commit, pending application, their exact
+base and withheld Welcome round-trip separately. The general `decode` helper
+does not check trailing bytes, so the fixture checks the public decoder's consumed
+length explicitly. This is a local boundary check, not the complete G4 validator.
+
+An authenticated ordered self-echo matching the exact pending envelope and base
+promotes the returned state. A competing accepted Commit discards only the losing
+pending state and its withheld Welcome. A peer processes actual MLS bytes. The
+fixture never combines unrelated secret trees. When an accepted application
+interleaves before a local echo, it replays those same bytes through both accepted
+and provisional MLS states with `processMessage`, verifies identical plaintext,
+and records both continuations. The Commit's retained parent epoch makes that
+specific replay possible; no secret-tree fields are hand-merged. This behavior
+has its own Node and browser case, including restart and pending application echo.
+
+The fixture allows one pending outbound operation per client. It refuses another
+local generation until that operation is accepted or loses; it still processes
+earlier ordered applications from peers. This local scheduling bound prevents
+generating repeatedly from unchanged accepted sender state. Multiple simultaneous
+local sends and crash-safe reservation of sender generations remain unproved.
+There is no global pause or skipped valid application while a Commit is pending.
+
+The tested default retention policy keeps four epochs and ten generations, with
+a 200-step forward-ratchet bound. Retained accepted/pending snapshots and parent
+epoch material affect forward secrecy. JavaScript strings and snapshots are not
+securely erased; clearing returned buffers is not a key-custody proof. Choosing
+retention and safe persistent custody remains part of G2/G4.
+
+### Experimental authentication and order
+
+All keys are public synthetic test material or newly generated test MLS keys.
+The closed fixture recognizes Alice, Bob, Carol and Dave. Each account signs a
+SHA-256 digest of a UTF-8 JSON array with BIP-340; MLS Basic credential bytes hold
+the proof. The exact leaf proof array is:
+
+```text
+["noseq/ordered-mls-probe/account-leaf@1", instance, genesis,
+ accountPublicKey, deviceName, 1, mlsSignaturePublicKey]
+```
+
+Validation checks the exact domain, instance/genesis, permitted synthetic account,
+device name, ciphersuite and actual MLS leaf signature key, then verifies the
+account signature. The MLS authentication callback performs these checks; it
+does not accept all credentials. The founder is checked explicitly because the
+library's `createGroup` path does not itself authenticate its own leaf. Tampered
+signatures, wrong domain and key substitution fail, including a malformed join
+KeyPackage presented through the actual Commit API. This fixed fixture account set
+is a test trust root, not owner-authorized production admission or a Nostr signer.
+
+An author-signed envelope binds experimental kind (`commit` or `application`),
+epoch, author, the exact private MLS message bytes and optional Welcome hash to
+`noseq/ordered-mls-probe/envelope@1`, instance and genesis. Its signature covers
+the SHA-256 of that ordered JSON array. Independent action proof uses the domain
+`noseq/ordered-mls-probe/action@1`, instance, genesis, author and plaintext value.
+The receiver checks the outer author against the authenticated current leaf and
+the actual MLS sender. These classes deliberately do not reuse a Marmot or Nostr
+authorization domain.
+
+The synthetic sequencer signs the SHA-256 of:
+
+```text
+["noseq/ordered-mls-probe/order@1", instance, genesis,
+ position, previousEntryHash, completeAuthorSignedEnvelope]
+```
+
+The entry ID is that digest. Clients verify the actual sequencer signature,
+instance/genesis, contiguous position, preceding hash and author proof before
+MLS acceptance. A signed entry observed at a waiting or failed position remains
+recorded, so a different signed replacement at that position is an observed fork,
+including after snapshot reconstruction. An identical accepted entry is a no-op;
+a gap or unavailable future epoch waits without moving the accepted frontier.
+Malformed signatures or a seen fork refuse. A verified old-epoch envelope is
+recorded as stale from its authenticated header, without using local decryption
+failure as a reason to skip an opaque position. Current-epoch cryptographic or
+local-secret failures halt at that position and preserve last-good state.
+
+This demonstrates first-valid-Commit selection for the tested common sequences.
+It does not solve the general invalid-control repair/stall policy: a current-epoch
+invalid control is not skipped to find a later winner. Only comparing observed
+signed histories reveals a fork; an unseen fork or selective withholding remains
+possible. JSON encoding here is an exact fixture contract, not P2 wire validation,
+a registered Nostr event kind or a P4 sequencer implementation.
+
+Welcome is withheld until its Commit is accepted, then checked against the bound
+Welcome hash and inviter's accepted ledger. The new member verifies that signed
+prefix and joins with the actual MLS Welcome API, checking the resulting branch.
+Losing and substituted Welcome bytes are refused by this wrapper. The inviter's
+decrypted acceptance ledger is still trusted by this test join flow; order
+signatures alone do not prove membership validity to a newcomer. The fixture
+does not claim owner-control, fresh-device history or independently authenticated
+archive/admission closure. The removal case delivers the same signed removal
+Commit to all three members. The removed recipient authenticates it and records
+the actual MLS `removedFromGroup` terminal result; unlike active members, it keeps
+its old epoch and does not derive the next epoch's keys. Direct MLS processing
+with that resulting state fails AES-GCM decryption of the future payload while
+remaining members decrypt it. This is distinct from a wrapper's terminal denial.
+A paired non-removal control first shows that a lagging member also cannot decrypt
+new-epoch data, then delivers the ordinary Commit: that retained member advances
+and decrypts successfully. The terminal marker survives serialized reconstruction.
+Previously learned plaintext and historic keys are not revoked.
+
+Independent review P1B-01 identified that the original case only tried untouched
+old state against new-epoch ciphertext, which did not distinguish removal from
+lag. The corrected case includes both actual Commit-delivery paths above and
+records their outcomes in each runtime's trace. The wrapper's active-member
+epoch-advance check remains strict; only the actual removed-member result has
+the explicit terminal path.
+
+### Evidence, restart limits and next decision
+
+Each UUID run retains source/lock/profile/fixture identities, actual runtime
+observations, signed public fixture traces, raw test reports, every process result,
+the generated browser bundle, and its exact successful P1a prerequisite. File
+hashes bind those outputs; the public verifier rechecks the current pinned inputs,
+all required cases, raw outcomes, runtime observations and prerequisite record.
+Skipped, missing, duplicated or failed cases cannot produce accepted evidence.
+The result always says `continue-investigation` with G1–G5 unpassed. Failed runs
+and successful reruns have different IDs. Logs are ignored bulk evidence, not a
+cryptographic attestation against someone rewriting their checkout and reports.
+
+Restart cases reconstruct objects from serialized accepted and pending state
+before/after generation, staging, Commit acceptance, application decryption and
+recorded outcome publication. A retained publication marker prevents a second
+local publication; without persisting that marker an external effect could be
+delivered twice. No process is killed and no durable filesystem transaction or
+crash recovery is proved. The browser reloads fresh pages for its cases, but that
+does not turn the snapshot exercises into durable browser recovery.
+
+The next bounded decision must address full signed-prefix and adversarial input
+coverage, restart/storage atomicity, owner-authorized membership controls,
+newcomer/recovery history closure, signer capability/domain validation and relay
+policies. The fixture exposes sender/account identifiers, group/epoch, routing,
+order, byte sizes and timing to its synthetic service; ciphertext remains opaque,
+but traffic metadata is not hidden. Neither Marmot interoperability nor a finished
+Noseq production profile follows from these API observations. Stop or change the
+candidate if these surviving requirements cannot be demonstrated.

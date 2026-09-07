@@ -31,7 +31,9 @@
     "acceptance": "node scripts/not-implemented.ts acceptance",
     "benchmark": "node scripts/not-implemented.ts benchmark",
     "probe:crypto-preflight": "node scripts/crypto-preflight.ts",
-    "verify:crypto-preflight": "node scripts/crypto-preflight.ts --verify"
+    "verify:crypto-preflight": "node scripts/crypto-preflight.ts --verify",
+    "probe:ordered-mls": "node scripts/ordered-mls.ts",
+    "verify:ordered-mls": "node scripts/ordered-mls.ts --verify"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "1.1.4",

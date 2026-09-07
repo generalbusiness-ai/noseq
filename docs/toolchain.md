@@ -158,3 +158,24 @@ Successful preflight evidence retains an explicit incompatible-candidate verdict
 and five unpassed gates; `test:crypto-feasibility` and `gate:protocol` still fail.
 This is a bounded Node investigation, with no assertion of browser/Workers crypto,
 current Marmot interoperability or an adopted encryption stack.
+
+## P1b development probes
+
+`probe:ordered-mls` reruns P1a and then exercises the pinned lower ts-mls public API
+through eight actual Node and eight actual Chromium scenarios. Run
+`verify:ordered-mls -- artifacts/ordered-mls/runs/<uuid>/evidence.json` to check its
+retained evidence again at the same source. The dedicated browser bundle and
+signed synthetic traces remain inside that unique run directory; it uses free
+loopback port `4175`. No cloud service or production application imports this API.
+
+The command checks `tsconfig.ordered-mls.json` after the pinned source is available;
+ordinary `check` continues checking all P0/P1a and Node tooling surfaces from
+`npm ci` alone. The ordered profile adds exact MLS source/API hashes and separate
+fixture/case requirements. Successful execution means bounded observations
+reproduced, including provisional state and interleaving; all full G1–G5 gates and
+their reserved commands remain unpassed. [The feasibility note](crypto-feasibility.md#p1b-ordered-mls-api-observations)
+defines the test proof/order domains and the limits of its join and restart claims.
+
+The CI workflow still runs the P0 baseline only. Local P1b browser crypto is a
+separate result; neither the P0 hosted run nor the P1a Node preflight stands in
+for it. P1b does not add a crypto package to the production dependency graph.
