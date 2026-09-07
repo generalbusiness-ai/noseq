@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:a789dc8aa17ed4d5190d763266c96c1ffee3dc14","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/node.test.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b18d04d7724e1c1f4883ecbcf553b2b1f89b67fe","text":"Merge retired a covered predecessor; the successor is at protocol-feasibility.playwright.config.ts."}
