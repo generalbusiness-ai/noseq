@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:f81f45dca7bf32e9880309e3b03432742fd8c935","text":"Merge retired a covered predecessor; the successor is at scripts/decision-verify.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ffd1a8def0d5b29176c75b0fefe9261e4bf26d16","text":"Merge retired a covered predecessor; the successor is at protocol-closure.vite.config.ts."}
