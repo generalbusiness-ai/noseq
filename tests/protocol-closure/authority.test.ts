@@ -17,7 +17,12 @@ beforeAll(async()=>{
 test("authority.valid-independent-order",()=>{
   const v=c.variant("valid-independent-order");const r=c.audit(v,"valid",null);assert.equal(r.result.cases,115);
   const rotation=rotate(v);state(v,"root","assert","Synthetic statement after actual sequencer rotation.",{},[v.seed]);
-  const result=c.audit(v,"rotation",null);assert(result.result.validAt.depth>r.result.validAt.depth);c.write("valid-independent-order");
+  const result=c.audit(v,"rotation",null);assert(result.result.validAt.depth>r.result.validAt.depth);
+  for(const order of ["sorted","reversed"]){const dir=join(v.directory,"export-"+order);exportFixture(v,dir);
+    alterExport(dir,x=>{const entries=Object.entries(x.chain);x.chain=Object.fromEntries(order==="sorted"?entries.sort(([a],[b])=>a.localeCompare(b)):entries.reverse());});
+    const reordered=c.audit(v,order,null,dir);assert.deepEqual(reordered.result.validAt,result.result.validAt);assert.deepEqual(reordered.result.chain,result.result.chain);
+  }
+  c.write("valid-independent-order");
 });
 test("authority.signature-and-git-integrity",()=>{
   const signed=c.variant("invalid-signature"),frontier=rewriteTip(signed,text=>text.replace(/(gpgsig -----BEGIN SSH SIGNATURE-----\n )([A-Za-z0-9])/,(_m,a,b)=>a+(b==="A"?"B":"A")));

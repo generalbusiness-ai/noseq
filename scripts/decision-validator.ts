@@ -85,7 +85,7 @@ export function verifyDecision(exportRoot:string,policyPath:string,output:string
   const D=standing(ids.D),Q=standing(ids.Q),P=standing(ids.P),R=standing(ids.R);
   assert.equal(D.kind,"propose");assert([p.principals.root,p.principals.implementer].includes(D.actor));assert.equal(D.satisfier,"role:ratifier");
   ratification(ids.AD,ids.D,p.principals.root);ratification(ids.AR,ids.R,Q.actor);
-  const positions=Object.values(ids).map(effective);for(let i=1;i<positions.length;i++)assert(positions[i]!>positions[i-1]!,"strict D AD Q P R AR order");assert(positions.at(-1)!<=x.frontier.depth);
+  const positions=[ids.D,ids.AD,ids.Q,ids.P,ids.R,ids.AR].map(effective);for(let i=1;i<positions.length;i++)assert(positions[i]!>positions[i-1]!,"strict D AD Q P R AR order");assert(positions.at(-1)!<=x.frontier.depth);
   const m=strictJSON(io.git(repo,"show",ids.D.split(":").at(-1)+":attachments/decision.json"));manifest(m);
   assert.equal(D.body?.noseq_protocol_selection,"noseq/p1-decision@1");assert.equal(D.body?.manifest_sha256,digest(JSON.stringify(m)),"D manifest digest");
   assert.deepEqual(m.source,p.expected.source);assert.deepEqual(sorted(m.artifacts.map(a=>a.path)),sorted(p.expected.paths));

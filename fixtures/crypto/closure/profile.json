@@ -164,6 +164,14 @@
       {
         "label": "rotation",
         "expected": "accepted"
+      },
+      {
+        "label": "sorted",
+        "expected": "accepted"
+      },
+      {
+        "label": "reversed",
+        "expected": "accepted"
       }
     ],
     "authority.signature-and-git-integrity": [

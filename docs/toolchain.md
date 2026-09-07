@@ -413,3 +413,13 @@ rewind of an already observed synthetic room. Corrections use separate fixture
 forks and preserve the failed runs. Exploratory passes are not the final clean
 candidate or independent approval. P1e does not implement P6 crash transactions,
 client publication markers, production activation or external signer onboarding.
+
+Independent review of P1e `e4bef37...` reproduced all 119 runtime cases, ten
+authority groups and 41 additional CLI outcomes, then found P1E-01: sorting only
+the unsigned export's chain-object keys wrongly rejected valid signed chronology.
+The retained reviewer experiment is `reordered-chain/` under review run
+`ade871bd-d0d3-41c1-9ec4-5dd2eaa5a2d7`. The correction reads semantic
+`D, AD, Q, P, R, AR` order explicitly and adds sorted/reversed-key positives
+while keeping actual wrong-order negatives. The authority suite now has 71
+explicit subchecks in its ten groups. Prior source and evidence stay unchanged;
+fresh complete evidence and independent review apply to the corrected source.
