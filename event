@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tsconfig.protocol-feasibility.json","body":{"commit":"1d4d775b342a34a32ca1690c461071b7010a9282","path":"tsconfig.protocol-feasibility.json"}}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:02bd9477ba84543b013c7364247fe62ca4969819","text":"Merge retired a covered predecessor; the successor is at fixtures/crypto/protocol/profile.json."}
