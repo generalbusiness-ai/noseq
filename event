@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tests/ordered-mls/scenarios.ts","body":{"commit":"c254887d4cb365bbc7ce6a8fe8b1959e34328be5","path":"tests/ordered-mls/scenarios.ts"}}
+{"kind":"artifact","text":"Merge published the current artifact at tsconfig.ordered-mls.json","body":{"commit":"c254887d4cb365bbc7ce6a8fe8b1959e34328be5","path":"tsconfig.ordered-mls.json"}}
