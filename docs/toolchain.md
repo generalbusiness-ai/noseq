@@ -423,3 +423,11 @@ The retained reviewer experiment is `reordered-chain/` under review run
 while keeping actual wrong-order negatives. The authority suite now has 71
 explicit subchecks in its ten groups. Prior source and evidence stay unchanged;
 fresh complete evidence and independent review apply to the corrected source.
+
+A subsequent cache-free source archive check (`3493d256...`) found that adding
+the dedicated closure typecheck to generic `npm run check` made baseline CI
+depend on the separately prepared upstream crypto cache. Generic checking keeps
+its original cache-free scope. The complete closure runner still requires the
+dedicated typecheck as step 2, after its pinned crypto prerequisites are ready;
+no P1 typecheck is optional. The original failure, cache-free correction check
+and earlier cached complete runs remain retained separately.

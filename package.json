@@ -9,7 +9,7 @@
   },
   "packageManager": "npm@11.19.0",
   "scripts": {
-    "check": "node scripts/check-toolchain.ts && node -e \"require('node:fs').mkdirSync('.generated', {recursive:true})\" && wrangler types --env-interface WorkerEnv .generated/worker-configuration.d.ts && tsc -p tsconfig.json && tsc -p tsconfig.browser.json && tsc -p tsconfig.worker.json && tsc -p tsconfig.webworker.json && tsc -p tsconfig.crypto-preflight.json && tsc -p tsconfig.protocol-closure.json",
+    "check": "node scripts/check-toolchain.ts && node -e \"require('node:fs').mkdirSync('.generated', {recursive:true})\" && wrangler types --env-interface WorkerEnv .generated/worker-configuration.d.ts && tsc -p tsconfig.json && tsc -p tsconfig.browser.json && tsc -p tsconfig.worker.json && tsc -p tsconfig.webworker.json && tsc -p tsconfig.crypto-preflight.json",
     "build": "node scripts/check-toolchain.ts && vite build && wrangler deploy --dry-run --outdir dist/worker",
     "dev": "vite --host 127.0.0.1",
     "browser:install": "playwright install chromium",
