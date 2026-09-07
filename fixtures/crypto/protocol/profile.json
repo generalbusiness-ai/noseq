@@ -1,0 +1,209 @@
+{
+  "id": "noseq/protocol-candidate@1",
+  "purpose": "P1c bounded proposed-profile feasibility; no production adoption",
+  "api": "ts-mls public API plus version-pinned internal message opening codecs/AEAD derivation; no Marmot interoperability",
+  "sourceFiles": {
+    "src/privateMessage.ts": "aaedebf586fe43ea01534242b6c11a1f858f67a7ab41ea5346379cf21504b58c",
+    "dist/src/privateMessage.js": "bf014df5812123dbbcab1fb1989234ae043a1bb2b7edcba9413460ca16026b96",
+    "src/sender.ts": "448f3e2d5b8d628ffca463a8bffef8c76e0ca3371cdf27ea36d63b16a957c0aa",
+    "dist/src/sender.js": "b19647327b03d618a000005a43dbe3fc2015e4988ec2fe9317616f0972614383",
+    "src/secretTree.ts": "86bcc9394177d222c434730760cff3693052d9ffc947c26f4dceef11a8e9c2f1",
+    "dist/src/secretTree.js": "bfb5e58727033dc26a9d00636e4e2c4ae617a1fb5863e4ff96675ab48ec318a7",
+    "src/groupContext.ts": "272aa30a46cc5b5986af410370edc7894669bec881d6b9e9bba65df1ad2b8eb1",
+    "dist/src/groupContext.js": "2175f2a9f07dc07760266edd4c581a4dd26cfcec9741f69d504b03f6b7f7ac8f",
+    "src/ratchetTree.ts": "a2ddb7cfcc8e36d6ba40e891a3c0215981913e0e7ea483b86f8de75c5ff17c5f",
+    "dist/src/ratchetTree.js": "dd4b5df4c4422a7f4c3f5bb393c128e2ec7c6ba07671a5dc8ff9974d9da54aaf",
+    "src/framedContent.ts": "b2407de7c25287033cd4d844515d542b1f53e0fcfcf6a5a070cdbe81ca174627",
+    "dist/src/framedContent.js": "9efc3f2158dbbfbb3fd553ee0742f472e974998121cd7b78f7dd8c1a4480243b"
+  },
+  "fixtures": [
+    "tests/protocol-feasibility/archive.ts",
+    "tests/protocol-feasibility/browser.test.ts",
+    "tests/protocol-feasibility/browser.ts",
+    "tests/protocol-feasibility/crypto.ts",
+    "tests/protocol-feasibility/gateway-native.ts",
+    "tests/protocol-feasibility/gateway-replication-client.ts",
+    "tests/protocol-feasibility/gateway.test.ts",
+    "tests/protocol-feasibility/gateway.ts",
+    "tests/protocol-feasibility/index.html",
+    "tests/protocol-feasibility/node.test.ts",
+    "tests/protocol-feasibility/opening.ts",
+    "tests/protocol-feasibility/policies.ts",
+    "tests/protocol-feasibility/scenarios.ts",
+    "tests/protocol-feasibility/wire.ts"
+  ],
+  "documents": [
+    "docs/protocol-v0.md",
+    "docs/confidentiality-and-recovery.md",
+    "docs/relay-profile.md",
+    "docs/crypto-feasibility.md",
+    "docs/toolchain.md"
+  ],
+  "nips": {
+    "url": "https://github.com/nostr-protocol/nips.git",
+    "commit": "c3fd9af17939316bf6d0d83a5759100f8b0a1bdb",
+    "files": {
+      "README.md": "cfe76d15ba5dfd78068d289dee9a2ab3013ae5ac605f25e8871ada49b7a41c2b",
+      "01.md": "6cd76682e7ec2d635f1f46b3660f621cdad1193d9174d316674b91f8d683af26",
+      "07.md": "79c747c1c63b4c4acd3f7221b67bf0d13bd05cd137515a0bf79f78c944d5ec41",
+      "11.md": "0592cf4eb5891f60ae4c7dc815c21bd23d18404cbe21615c7e6c26d75c8cce30",
+      "42.md": "176458314bb0cd3b9c673b43b6bf05e4cb2354f5d56880d8d6627713d6fd4f87",
+      "44.md": "b5f89374e4e1dbdee7881e8573b4313b6a89430a9c8d518471599ae0660cf0e2",
+      "46.md": "e5a3c818eb3bc410541104198d4ebdce6b1720a2da00cb8e71d38ec0b72f01c1",
+      "70.md": "d69e05a0948aae4255d97f57e96dc560de230614ed1a3955d108b22c093bbdb2",
+      "77.md": "c1a1848bbc29a0a76e98fdba827642b22de62a26d5a9b737bcbdb55cb84662b6"
+    }
+  },
+  "nostrTools": {
+    "version": "2.25.2",
+    "files": {
+      "package.json": "59d9610cd5df7d98fe6e203ce0c6bfd28b43abf87c84c095606dc55f4542dfa1",
+      "LICENSE": "f0510d3b9d1223c45e8fdd2b49270ec8734fff491c7f7d1b948ee70162e1ceff",
+      "lib/esm/pure.js": "7e39410bf0b1105eeb90ce9653040e7a6f31db65cef457de24f9aa3c344c013d",
+      "lib/esm/core.js": "5f10b48cb8d7b1f1819316623c1c543a6f2e624e6366390a473e03bce2f9fe13",
+      "lib/esm/nip44.js": "21039eba01a6c35589a7d30d00e59bd4b8cf0fbccfcf23a2cd9debfbf1209435"
+    }
+  },
+  "native": {
+    "source": "4cd3cf64850caf47dda46c2a2abbbf3525a64d10",
+    "binarySha256": "028f26b98b0b895ed4d32f83642e3fa25173f3498330e9bfc2567a3fc06ffab4",
+    "buildRecordSha256": "545bceac10df0157ce00b5a6b6124d03cba2ac4eebcc042b32e643513284b90b"
+  },
+  "suites": [
+    {
+      "id": "node",
+      "command": "vitest run --config protocol-feasibility.config.ts",
+      "requiredCases": [
+        "feasibility.node.archive-openings-and-closure",
+        "feasibility.node.archive-negative-coverage",
+        "feasibility.node.fresh-device-and-all-device-loss",
+        "feasibility.node.recovery-rotation-and-revocation",
+        "feasibility.node.owner-admission-one-boundary",
+        "feasibility.node.mismatched-membership-stalls",
+        "feasibility.node.prefix-interleaving-and-restarts",
+        "feasibility.node.offline-beyond-retained-epochs",
+        "feasibility.node.removed-history-holder-and-exact-retry",
+        "feasibility.node.multi-device-membership",
+        "feasibility.node.explicit-failure-dispositions",
+        "feasibility.node.strict-wire-and-identities",
+        "feasibility.node.signer-capabilities-and-invitation",
+        "feasibility.node.encoded-resource-budget",
+        "feasibility.node.relay-policy-conformance"
+      ]
+    },
+    {
+      "id": "browser",
+      "command": "playwright test --config protocol-feasibility.playwright.config.ts",
+      "requiredCases": [
+        "feasibility.browser.archive-openings-and-closure",
+        "feasibility.browser.archive-negative-coverage",
+        "feasibility.browser.fresh-device-and-all-device-loss",
+        "feasibility.browser.recovery-rotation-and-revocation",
+        "feasibility.browser.owner-admission-one-boundary",
+        "feasibility.browser.mismatched-membership-stalls",
+        "feasibility.browser.prefix-interleaving-and-restarts",
+        "feasibility.browser.offline-beyond-retained-epochs",
+        "feasibility.browser.removed-history-holder-and-exact-retry",
+        "feasibility.browser.multi-device-membership",
+        "feasibility.browser.explicit-failure-dispositions",
+        "feasibility.browser.strict-wire-and-identities",
+        "feasibility.browser.signer-capabilities-and-invitation",
+        "feasibility.browser.encoded-resource-budget",
+        "feasibility.browser.relay-policy-conformance"
+      ]
+    },
+    {
+      "id": "gateway",
+      "command": "vitest run --config protocol-gateway.config.ts",
+      "requiredCases": [
+        "feasibility.gateway.G5-F01",
+        "feasibility.gateway.G5-F02",
+        "feasibility.gateway.G5-F03",
+        "feasibility.gateway.G5-F04",
+        "feasibility.gateway.G5-F05",
+        "feasibility.gateway.G5-F06",
+        "feasibility.gateway.G5-F07",
+        "feasibility.gateway.G5-F08"
+      ]
+    }
+  ],
+  "gates": {
+    "G1": "unpassed",
+    "G2": "unpassed",
+    "G3": "unpassed",
+    "G4": "unpassed",
+    "G5": "unpassed"
+  },
+  "closure": "pending-independent-review-and-explicit-adoption; prefix-policy-investigation-only",
+  "policy": {
+    "name": "membership-at-highest-verified-retained-prefix",
+    "direction": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:216ddf15ae48778bc148a65e46ef3f25fe6b4018",
+    "ratification": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5ef488f17a21a9e1d8964f9b6c84b74b93c6655c",
+    "exposure": "unseen removal may permit previously unfetched old history through retained prefix; no globally-current claim",
+    "adoption": "not adopted; explicit later adoption must reaffirm tradeoff"
+  },
+  "wire": {
+    "domain": "noseq/protocol-candidate@1",
+    "kinds": {
+      "genesis": 8790,
+      "submission": 8791,
+      "order": 8792,
+      "admission": 8793,
+      "proof": 8794,
+      "chunk": 8795,
+      "archive": 8796,
+      "welcome": 8797
+    },
+    "limits": {
+      "event": 131072,
+      "frame": 131200,
+      "action": 32768,
+      "chunk": 16384,
+      "closure": 524288,
+      "files": 64,
+      "devices": 16,
+      "accounts": 8,
+      "keyPackage": 8192,
+      "proposals": 16,
+      "tags": 16,
+      "tagBytes": 256,
+      "depth": 32,
+      "archive": 16777216,
+      "archiveEntries": 128,
+      "journal": 268435456,
+      "outbox": 67108864,
+      "connections": 32,
+      "subscriptions": 4,
+      "filters": 4,
+      "pageEvents": 128,
+      "pageBytes": 1048576,
+      "liveEvents": 128,
+      "liveBytes": 1048576,
+      "fetches": 8,
+      "replicationEvents": 64,
+      "replicationBytes": 1048576,
+      "replicas": 2,
+      "retrySeconds": [
+        1,
+        300
+      ],
+      "creatorInstances": 10,
+      "identityRequestsPerMinute": 60,
+      "burst": 10,
+      "instanceRequestsPerMinute": 300
+    }
+  },
+  "gatewayRuntime": {
+    "ws": "8.21.0",
+    "types": "8.18.1",
+    "isolation": "macOS sandbox-exec; local client process only",
+    "files": {
+      "package.json": "584ce6e7516587ba249dc910b0c04e2753f6b3f451fc3a5bc324f7735bdacc71",
+      "LICENSE": "2b29dcfe0d6471f7e8c92c5fb38c9f93edee10330937055440192f1832b1ecef",
+      "lib/websocket-server.js": "29029a4d346800c792300df153df2007e9805d9d7b67b0883f9730b64f25b1c8",
+      "lib/websocket.js": "48fdb0f54c1f8ce580d3cfa2908fe7d96fe18f06f9d82306950441cb09b5db26",
+      "lib/receiver.js": "4879edbf8e48d04d09783cf9c04b5e25f5a448247bb01279438ded2899747220",
+      "lib/sender.js": "d0791d30c3defd44dcabbddb879a901c757993fea2c00a7ffea01d53b23b4b77"
+    }
+  }
+}

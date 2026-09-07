@@ -408,3 +408,50 @@ order, byte sizes and timing to its synthetic service; ciphertext remains opaque
 but traffic metadata is not hidden. Neither Marmot interoperability nor a finished
 Noseq production profile follows from these API observations. Stop or change the
 candidate if these surviving requirements cannot be demonstrated.
+
+## P1c proposed protocol and recovery observations
+
+P1c adds a separate `noseq/protocol-candidate@1` proposal and real Node/Chromium
+fixtures. Read [protocol v0](protocol-v0.md), [confidentiality and recovery](confidentiality-and-recovery.md)
+and [relay profile](relay-profile.md) together. The P1a candidate remains
+incompatible with current Marmot; P1b remains a bounded API investigation.
+Neither earlier result is silently upgraded by the new profile.
+
+The new paths exercise ordinary Nostr signed account/device/leaf bindings,
+provisional Commit/Welcome, one owner-admission boundary, competing changes,
+interleaved applications, full-prefix recovery, explicit cipher/identity/coverage
+negatives, multi-device removal, local-key failure isolation, strict wire bytes,
+encoded resource expansion and a pure private-relay policy model. Fifteen named
+cases run in each real client runtime. The prerequisite P1b removal fixture
+retains the actual removal Commit, terminal result, direct future crypto failure
+and non-removing positive control required by its independent review.
+
+The recovery proposal is explicitly **owner-attested over all historical control
+transitions**, with independently checked per-message content/sender AEAD
+openings, MLS signatures and original account-signed actions for every ordered
+application. Shared history contains no live owner MLS state. The owner's vault
+is separate, checkpoint-bound and encrypted under a different key. The old-vault
+rotation control demonstrates why re-encrypting a backup alone cannot revoke a
+retained MLS client; actual device removal is needed for future exclusion.
+Object reconstruction demonstrates the declared input boundary, not durable
+browser/process crash recovery. The documents state the retained-secret and
+immutable-owner compromise limits without claiming trustless history.
+
+The local pinned strfry build now permits real acceptance/readback tests. It
+reproduces the 64 KiB default event limit, full-frame overhead at 128 KiB, and
+unauthenticated COUNT leakage despite a denied restricted-kind REQ. The latter
+is a negative infrastructure result. An independent membership gateway/private
+store now has eight real isolated socket cases. The ratified investigation
+selects highest verified retained-prefix membership, explicitly permitting old
+history through 40 after an unseen removal at 41. Known removals cut off queued
+and subsequent output, and stale restores require external reconciliation.
+These experiments are not production deployment, persistence or adoption.
+
+The bounded decision is continue evaluating the client/archive proposal, change
+the bare relay boundary and keep adoption pending. All G1–G5 remain UNPASSED.
+The strict candidate evidence can pass while `test:crypto-feasibility` and
+`gate:protocol` remain nonzero. An actual independent exact-profile review and
+an explicitly authorized, separately reviewed gate-activation record/validator
+are required after the remaining cases and policy decisions; an author boolean
+or arbitrary report ID cannot activate this candidate. No P2–P9 implementation
+or production crypto adoption follows from P1c publication.

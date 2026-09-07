@@ -179,3 +179,71 @@ defines the test proof/order domains and the limits of its join and restart clai
 The CI workflow still runs the P0 baseline only. Local P1b browser crypto is a
 separate result; neither the P0 hosted run nor the P1a Node preflight stands in
 for it. P1b does not add a crypto package to the production dependency graph.
+
+## P1c proposed-profile probes
+
+The application build and hosted CI remain P0-only. `npm ci`, `npm run check`
+and `npm run build` still work without the separate upstream source caches.
+`probe:protocol-feasibility` fetches/checks pinned reference sources, runs the P0
+harness and unchanged P1a/P1b prerequisites, checks the dedicated P1c TypeScript
+configuration, builds its actual Chromium page and runs 15 Node plus 15 Chromium
+cases, then eight actual gateway/strfry socket cases. Its browser uses free
+loopback port 4176. The native relay probe allocates
+fresh loopback ports and stops its children. There is no deployment command.
+
+```sh
+npm ci
+npm run browser:install
+npm run check
+npm run build
+NOSEQ_STRFRY_ROOT=/absolute/path/to/retained/noseq-strfry-native npm run probe:protocol-feasibility
+npm run verify:protocol-feasibility -- artifacts/protocol-feasibility/runs/<uuid>/evidence.json
+npm run test:crypto-feasibility -- artifacts/protocol-feasibility/runs/<uuid>/evidence.json
+npm run gate:protocol -- artifacts/protocol-feasibility/runs/<uuid>/evidence.json
+```
+
+The last two commands intentionally fail even for valid candidate observations.
+They validate supplied evidence and explain the absent full gate/decision
+closure. All 15 reserved command checks remain exercised by the P0 harness;
+they have not been deleted when the two gate readers were introduced.
+
+For this local investigation, `NOSEQ_STRFRY_ROOT` points to the coordinator's
+retained `work/noseq-strfry-native` directory under this Codex task, containing
+`source/strfry`, clean source/submodules, private `prefix/` and
+`runs/a738aa02-a674-4649-b0c7-9b7971fe103c/record.json`. The exact source, binary and
+build-record hashes are in the [machine profile](../fixtures/crypto/protocol/profile.json).
+The record and `build.py` retain compiler, OS, existing libraries, four static
+bottle hashes, private-prefix overrides and build logs. This is a pinned macOS
+execution dependency, not an npm download or a portable rebuild promise.
+Absent/changed native material makes the candidate run fail and leaves G5
+pending; a different platform/build needs its own reviewed profile/evidence.
+The verifier can inspect retained copied native inputs/results without launching
+the binary. Do not install global dependencies or replace the selected source
+implicitly to make the check green.
+
+P1c adds exact dev-only nostr-tools 2.25.2 under its Unlicense, ws 8.21.0
+under MIT, @types/ws 8.18.1 for the local gateway, and pins the
+additional internal MLS helper source/built bytes. The production host/Worker
+import neither. The protocol profile also pins the inspected NIP registry/files,
+all fixture and specification bytes, required cases and explicit unpassed gates.
+The native probe is a source-bound adaptation of the coordinator's synthetic
+size/COUNT experiment; its expected negative result is not a security pass.
+
+Each run has a new UUID, exclusive start/context/command/evidence/failure records,
+raw test reports, browser bundle, synthetic signed fixture traces and native
+configs/logs/results, gateway state snapshots and separate replication-process
+traces. The isolation case also requires macOS `/usr/bin/sandbox-exec`; another
+platform must supply a separately reviewed equivalent, not skip the case. Prerequisite evidence is hash-bound and recursively
+validated against the same clean source/tree, lock and runtime. Missing cases,
+retries, skipped outcomes, changed raw reports, foreign source and forged gate
+claims fail. Ignored LMDB databases are retained separately from the hashed
+native input/result manifest; no final artifact claims they are recovery proof.
+
+Earlier failed or exploratory runs remain available. In P1c preparation an
+ordered-MLS run detected a package/lock change during execution and correctly
+failed its source check (`c1db86b7-959f-46e4-894c-19f52da5d9df`); it is not an
+acceptance result. Exploration directories retain earlier typecheck and scenario
+failures alongside later passes, including development of message-specific
+archive openings and separate owner-vault custody. Only a clean exact-head
+candidate run plus actual independent review supports the publication claim.
+Hosted P0 success still cannot stand in for any P1c crypto/relay result.

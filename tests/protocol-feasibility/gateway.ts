@@ -1,0 +1,144 @@
+// Isolated G5 socket feasibility fixture. No production routing, persistence or deployment claim.
+import { strict as assert } from "node:assert";
+import { createServer } from "node:http";
+import { readFileSync, writeFileSync, renameSync } from "node:fs";
+import WebSocket, { WebSocketServer } from "ws";
+import { Peer, type Frame } from "./gateway-native.ts";
+import { entry, publicTransition, checkMembers, type PublicState } from "./crypto.ts";
+import { authenticate, type Session } from "./policies.ts";
+import { canonical, clone, equal, eventBytes, fields, hex, hex32, integer, limits, parse, random, read, readGenesis, unb64, type Signed, type Context } from "./wire.ts";
+
+interface Stored { events: Signed[]; objects: Record<string, Signed>; closures: Record<string, Signed>; initial: PublicState; public: PublicState; fork: boolean }
+interface Filter { kinds: number[]; ids?: string[]; limit: number; "#h": string[]; "#i": string[]; "#d": string[]; noseq_tip?: string }
+interface Reader { socket: WebSocket; auth: Session; subscriptions: Map<string, Filter[]>; blocked: Set<string>; queue: { subscription: string; message: unknown[] }[]; queuedBytes: number; draining: boolean; operator: boolean }
+export class Gateway {
+  data: Stored; buffer = new Map<number, Signed>(); restoredFence: boolean; controlGap = false; paused = false; journalBytes = 0;
+  released: { id: string | null; authority: string; subscription: string }[] = []; private readers = new Set<Reader>(); private tail = Promise.resolve();
+  private backend?: Peer; private backendRequest = 0; private listeners: { server: ReturnType<typeof createServer>; ws: WebSocketServer }[] = [];
+  url = ""; operatorUrl = ""; reconcileChallenge = hex(random());
+  constructor(readonly ctx: Context, readonly root: Signed, readonly statePath: string, initial: PublicState, founder: Signed, readonly replicas: string[], readonly trace: Frame[], restored = false) {
+    equal(readGenesis(root, ctx.owner, ctx.genesis), ctx, "gateway enrollment root");
+    fields(initial,["version","epoch","members"]); assert.equal(initial.version,0); assert.equal(initial.epoch,0); checkMembers(initial.members); assert.equal(initial.members.length,1);
+    const proof=read(eventBytes(founder),"proof",ctx); assert.equal(proof.pubkey,ctx.owner); const binding=parse(proof.content); fields(binding,["type","device","suite","leaf"]); assert.equal(binding.type,"account-leaf"); assert.equal(binding.suite,1);
+    equal(initial.members[0],{account:ctx.owner,device:binding.device,leaf:binding.leaf},"owner-signed founder binding");
+    this.data = { events: [], objects: {}, closures: {}, initial: clone(initial), public: clone(initial), fork: false }; this.restoredFence = restored;
+  }
+  get tip(): string { return this.data.events.at(-1)?.id ?? this.ctx.genesis; }
+  get readable(): boolean { return !this.restoredFence && !this.controlGap && !this.data.fork; }
+  private mayRead(r: Reader): boolean { return this.readable && r.auth.authenticated.some(k => this.data.public.members.some(m => m.device === k)); }
+  private mayWrite(r: Reader): boolean { return r.operator && r.auth.authenticated.some(k => k === this.ctx.sequencer || this.replicas.includes(k)); }
+  private persist(): void { writeFileSync(this.statePath + ".next", canonical(this.data)); renameSync(this.statePath + ".next", this.statePath); }
+  loadIntact(): void {
+    const data = parse(readFileSync(this.statePath, "utf8"), limits.archive) as unknown as Stored; let state = clone(data.initial), previous = this.ctx.genesis;
+    equal(state, this.data.initial, "restored root roster");
+    for (const [i, signed] of data.events.entries()) { const e = entry(signed, this.ctx); assert.equal(e.position, i + 1); assert.equal(e.previous, previous); state = publicTransition(this.ctx, state, e); previous = signed.id; }
+    equal(state, data.public, "restored authority mismatch"); this.data = data;
+    this.journalBytes = data.events.reduce((n, e) => n + Buffer.byteLength(eventBytes(e)), 0); // Intact-file reconstruction; no fsync/crash guarantee.
+  }
+  metadata() { return { name: "Noseq isolated prefix gateway", supported_nips: [1, 11, 42], limitation: { max_message_length: limits.frame, max_subscriptions: limits.subscriptions, max_limit: limits.pageEvents, max_event_tags: limits.tags, max_content_length: limits.event, auth_required: true, restricted_writes: true }, noseq: { policy: "highest-verified-retained-prefix", status: "development-fixture", normal_history: true, public_count: false, public_negentropy: false } }; }
+  async start(backendUrl: string): Promise<void> {
+    this.backend = await Peer.connect(backendUrl, "gateway-private-backend", this.trace);
+    for (const operator of [false, true]) {
+      const server = createServer((request, response) => { if (request.url === "/" && request.headers.accept === "application/nostr+json") { response.setHeader("Content-Type", "application/nostr+json"); response.end(JSON.stringify(this.metadata())); } else { response.statusCode = 404; response.end("unavailable"); } });
+      const ws = new WebSocketServer({ noServer: true, maxPayload: limits.frame, perMessageDeflate: false });
+      server.on("upgrade", (request, socket, head) => { if (request.url !== `/instance/${this.ctx.genesis}` || this.readers.size >= limits.connections) { socket.destroy(); return; } ws.handleUpgrade(request, socket, head, socket => ws.emit("connection", socket)); });
+      ws.on("connection", socket => {
+        const url = operator ? this.operatorUrl : this.url; const r: Reader = { socket, auth: { url, challenge: hex(random()), authenticated: [], generation: 1, subscriptions: 0 }, subscriptions: new Map(), blocked: new Set(), queue: [], queuedBytes: 0, draining: false, operator };
+        this.readers.add(r); socket.on("error", () => {}); socket.on("close", () => { this.readers.delete(r); r.queue = []; }); socket.send(canonical(["AUTH", r.auth.challenge]));
+        socket.on("message", bytes => { const raw = bytes.toString(); this.trace.push({ connection: operator ? "operator-input" : "reader-input", direction: "receive", message: raw });
+          this.tail = this.tail.then(async () => { try { await this.handle(r, raw); } catch (error) { if (socket.readyState === WebSocket.OPEN) socket.send(canonical(["NOTICE", "rejected: " + String(error).slice(0, 160)])); } });
+        });
+      });
+      await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve)); const port = (server.address() as { port: number }).port;
+      const url = `ws://127.0.0.1:${port}/instance/${this.ctx.genesis}`; if (operator) this.operatorUrl = url; else this.url = url; this.listeners.push({ server, ws });
+    }
+  }
+  private async backendPut(e: Signed): Promise<void> { assert(this.backend); this.backend.send(["EVENT", e]); const ok = await this.backend.take(m => m[0] === "OK" && m[1] === e.id); assert.equal(ok[2], true, "backend refused retention"); }
+  private async backendGet(id: string): Promise<Signed> {
+    assert(this.backend); const sub = "private-" + ++this.backendRequest; this.backend.send(["REQ", sub, { ids: [id], limit: 1 }]);
+    await this.backend.take(m => m[0] === "EOSE" && m[1] === sub); const found = this.backend.messages.find(m => m[0] === "EVENT" && m[1] === sub); this.backend.messages = this.backend.messages.filter(m => m[1] !== sub); this.backend.send(["CLOSE", sub]);
+    assert(found, "retained identity missing: partial/unavailable"); return found[2] as Signed;
+  }
+  private async ingest(signed: Signed): Promise<void> {
+    const e = entry(signed, this.ctx); const previous = this.data.events[e.position - 1];
+    if (previous) { if (previous.id !== signed.id) { this.data.fork = true; this.persist(); this.cancelUnauthorized(); throw new Error("observed fork"); } await this.backendPut(signed); equal(await this.backendGet(signed.id), signed, "private restore readback"); return; }
+    if (this.buffer.has(e.position) && this.buffer.get(e.position)!.id !== signed.id) { this.data.fork = true; this.persist(); this.cancelUnauthorized(); throw new Error("observed buffered fork"); }
+    if (e.position > this.data.events.length + 1) { assert(this.buffer.size < limits.pageEvents, "gap buffer full"); this.buffer.set(e.position, signed); if (e.admission) this.controlGap = true; this.cancelUnauthorized(); return; }
+    assert.equal(e.previous, this.tip, "predecessor mismatch"); const next = publicTransition(this.ctx, this.data.public, e);
+    assert(this.journalBytes + Buffer.byteLength(eventBytes(signed)) <= limits.journal, "retention full; no eviction"); await this.backendPut(signed);
+    const retained = await this.backendGet(signed.id); equal(retained, signed, "backend readback changed"); this.data.events.push(clone(signed)); this.data.public = clone(next); this.journalBytes += Buffer.byteLength(eventBytes(signed)); this.persist();
+    this.cancelUnauthorized(); // This is the authorization cutoff, before any corresponding live queue item.
+    for (const r of this.readers) for (const [sub, f] of r.subscriptions) if (f.some(filter => this.matches(signed, filter) && !filter.noseq_tip)) this.enqueue(r, sub, ["EVENT", sub, signed]);
+    const buffered = this.buffer.get(this.data.events.length + 1); if (buffered) { this.buffer.delete(this.data.events.length + 1); await this.ingest(buffered); }
+    this.controlGap = [...this.buffer.values()].some(e => entry(e, this.ctx).admission !== null); this.cancelUnauthorized();
+  }
+  private filter(x: unknown): Filter {
+    assert(x && typeof x === "object" && !Array.isArray(x)); const f = x as Record<string, unknown>;
+    const permitted = ["kinds", "ids", "limit", "#h", "#i", "#d", "noseq_tip"]; assert(Object.keys(f).every(k => permitted.includes(k)), "unsupported filter");
+    equal(f["#h"], [this.ctx.genesis], "genesis filter"); equal(f["#i"], [this.ctx.instance], "instance filter"); equal(f["#d"], [this.ctx.definition], "definition filter"); equal(f.kinds, [8792], "history kind filter");
+    integer(f.limit, limits.pageEvents); assert((f.limit as number) > 0);
+    if (f.ids !== undefined) { assert(Array.isArray(f.ids) && f.ids.length > 0 && f.ids.length <= limits.pageEvents); for (const id of f.ids) hex32(id); }
+    if (f.noseq_tip !== undefined) hex32(f.noseq_tip); return f as unknown as Filter;
+  }
+  private matches(e: Signed, f: Filter): boolean { return f.kinds.includes(e.kind) && (!f.ids || f.ids.includes(e.id)); }
+  private enqueue(r: Reader, subscription: string, message: unknown[]): void {
+    if (r.blocked.has(subscription)) return;
+    if (!this.mayRead(r)) { if (r.socket.readyState === WebSocket.OPEN) r.socket.send(canonical(["CLOSED", subscription, "restricted or unavailable"])); return; }
+    const bytes = Buffer.byteLength(canonical(message)); assert(bytes <= limits.frame, "outbound frame cap");
+    if (r.queue.filter(q => q.message[0] === "EVENT").length + (message[0] === "EVENT" ? 1 : 0) > limits.liveEvents || r.queuedBytes + bytes + r.socket.bufferedAmount > limits.liveBytes) { r.queue = []; r.queuedBytes = 0; r.subscriptions.delete(subscription); r.blocked.add(subscription); r.socket.send(canonical(["CLOSED", subscription, "slow reader: resync"])); return; }
+    r.queue.push({ subscription, message }); r.queuedBytes += bytes; this.drain(r);
+  }
+  private drain(r: Reader): void {
+    if (r.draining || this.paused) return; r.draining = true;
+    setImmediate(() => {
+      r.draining = false; if (this.paused || r.socket.readyState !== WebSocket.OPEN) return;
+      const item = r.queue.shift(); if (!item) return; r.queuedBytes -= Buffer.byteLength(canonical(item.message));
+      if (!this.mayRead(r)) { r.queue = []; r.queuedBytes = 0; r.subscriptions.clear(); r.socket.send(canonical(["CLOSED", item.subscription, "restricted or unavailable"])); return; }
+      // No await between this check and handing bytes to ws.send. Already handed bytes are in flight, not revocable.
+      r.socket.send(canonical(item.message)); this.released.push({ id: item.message[0] === "EVENT" ? (item.message[2] as Signed).id : null, authority: this.tip, subscription: item.subscription }); this.drain(r);
+    });
+  }
+  resume(): void { this.paused = false; for (const r of this.readers) this.drain(r); }
+  private cancelUnauthorized(): void { for (const r of this.readers) if (!this.mayRead(r) && (r.queue.length || r.subscriptions.size)) { const ids = new Set([...r.subscriptions.keys(), ...r.queue.map(x => x.subscription)]); r.queue = []; r.queuedBytes = 0; r.subscriptions.clear(); for (const id of ids) r.socket.send(canonical(["CLOSED", id, "restricted or unavailable"])); } }
+  private async handle(r: Reader, raw: string): Promise<void> {
+    // WebSocket maxPayload bounds allocation; canonical parsing also rejects duplicates/unknown encodings.
+    const m = parse(raw, limits.frame); assert(Array.isArray(m) && typeof m[0] === "string");
+    if (m[0] === "AUTH") {
+      assert.equal(m.length, 2); const e = m[1] as Signed;
+      try { authenticate(r.auth, e, Math.floor(Date.now() / 1000)); r.socket.send(canonical(["OK", e.id, true, ""])); }
+      catch { r.socket.send(canonical(["OK", typeof e.id === "string" ? e.id : "", false, "auth-required: invalid proof"])); } return;
+    }
+    if (r.operator) {
+      assert(this.mayWrite(r), "operator authorization");
+      if (m[0] === "EVENT") { assert.equal(m.length, 2); const e = m[1] as Signed; try { await this.ingest(e); r.socket.send(canonical(["OK", e.id, !this.buffer.has(entry(e, this.ctx).position), this.buffer.has(entry(e, this.ctx).position) ? "blocked: buffered dependency; not retained" : "retained"])); } catch (error) { r.socket.send(canonical(["OK", e.id, false, String(error)])); } return; }
+      if (m[0] === "OBJECT") { assert.equal(m.length, 2); const e = read(eventBytes(m[1] as Signed), "chunk", this.ctx); assert(this.data.public.members.some(v => v.device === e.pubkey && v.account === this.ctx.owner), "object owner device");
+        const wrapper=parse(e.content); fields(wrapper,["format","context","generation","nonce","keyId","checkpoint","bytes"]);assert.equal(wrapper.format,"noseq/recovery-aes256gcm@1");equal(wrapper.context,this.ctx,"object context");integer(wrapper.generation);assert((wrapper.generation as number)>0);hex32(wrapper.checkpoint);hex32(wrapper.keyId);assert.equal(unb64(wrapper.nonce,12).length,12);assert(unb64(wrapper.bytes).length>=16);
+        await this.backendPut(e); this.data.objects[e.id] = e; this.persist(); r.socket.send(canonical(["OK", e.id, true, "retained object"])); return; }
+      if (m[0] === "CLOSURE") { assert.equal(m.length, 2); const e = read(eventBytes(m[1] as Signed), "proof", this.ctx); assert.equal(e.pubkey, this.ctx.owner); const c = parse(e.content); fields(c, ["type", "tip", "checkpoint", "ids"]); assert.equal(c.type, "retention-closure"); hex32(c.tip); assert(Array.isArray(c.ids) && c.ids.length > 0 && c.ids.length <= limits.pageEvents); for (const id of c.ids) hex32(id); assert(this.data.events.some(v => v.id === c.tip), "unknown closure tip");assert.equal(new Set(c.ids).size,c.ids.length,"duplicate closure IDs");
+        const checkpoint=read(eventBytes(c.checkpoint as Signed),"archive",this.ctx);assert.equal(checkpoint.pubkey,this.ctx.owner);const coverage=parse(checkpoint.content);fields(coverage,["type","bodyHash","vaultHash","count","tip"]);assert.equal(coverage.type,"owner-attested-full-prefix@1");hex32(coverage.bodyHash);hex32(coverage.vaultHash);assert.equal(coverage.tip,c.tip);assert.equal(coverage.count,this.data.events.findIndex(v=>v.id===c.tip)+1);
+         await this.backendPut(e); this.data.closures[c.tip] = e; this.persist(); r.socket.send(canonical(["OK", e.id, true, "closure declaration retained; completeness checked on read"])); return; }
+      if (m[0] === "RECONCILE") { const e = read(eventBytes(m[1] as Signed), "proof", this.ctx); assert.equal(e.pubkey, this.ctx.owner); const c = parse(e.content); fields(c, ["type", "challenge", "position", "tip"]); assert.equal(c.type, "trusted-high-water"); assert.equal(c.challenge, this.reconcileChallenge); integer(c.position); hex32(c.tip); assert.equal(this.data.events[(c.position as number) - 1]?.id ?? this.ctx.genesis, c.tip, "restore missing trusted high-water prefix"); this.restoredFence = false; this.reconcileChallenge = hex(random()); r.socket.send(canonical(["OK", e.id, true, "reconciled external authority"])); return; }
+      throw new Error("unsupported private command");
+    }
+    if (m[0] === "CLOSE") { assert.equal(m.length, 2); r.subscriptions.delete(m[1] as string); r.queue = r.queue.filter(x => x.subscription !== m[1]); r.queuedBytes = r.queue.reduce((n, x) => n + Buffer.byteLength(canonical(x.message)), 0); return; }
+    if (m[0] === "REQ") {
+      assert(m.length >= 3 && m.length <= 2 + limits.filters); const sub = m[1]; assert(typeof sub === "string" && /^[a-zA-Z0-9-]{1,32}$/.test(sub));
+      if (!this.mayRead(r)) { r.socket.send(canonical(["CLOSED", sub, "restricted or unavailable"])); return; }
+      const filters = m.slice(2).map(f => this.filter(f)); // Validate EVERY OR branch before querying storage.
+      assert(r.subscriptions.has(sub) || r.subscriptions.size < limits.subscriptions, "subscription cap");
+      const tip = filters[0]!.noseq_tip ?? this.tip; assert(filters.every(f => (f.noseq_tip ?? this.tip) === tip), "mixed data tips"); const end = this.data.events.findIndex(e => e.id === tip); assert(end >= 0, "unknown tip");
+      const all = this.data.events.slice(0, end + 1); const ids = new Set(filters.flatMap(f => all.filter(e => this.matches(e, f)).slice(0, f.limit).map(e => e.id))); const chosen = all.filter(e => ids.has(e.id)); const found: Signed[] = []; let bytes = 0;
+      for (const e of chosen) { if (found.length >= limits.pageEvents || bytes + Buffer.byteLength(eventBytes(e)) > limits.pageBytes) break; const actual = await this.backendGet(e.id); equal(actual, e, "retained bytes differ"); found.push(actual); bytes += Buffer.byteLength(eventBytes(e)); }
+      r.blocked.delete(sub); r.subscriptions.set(sub, filters); for (const e of found) this.enqueue(r, sub, ["EVENT", sub, e]); this.enqueue(r, sub, ["EOSE", sub]); return;
+    }
+    if (m[0] === "NOSEQ-CLOSURE") {
+      assert.equal(m.length, 3); const sub = m[1]; assert(typeof sub === "string" && /^[a-zA-Z0-9-]{1,32}$/.test(sub)); hex32(m[2]);
+      if (!this.mayRead(r)) { r.socket.send(canonical(["CLOSED", sub, "restricted or unavailable"])); return; }
+      const declaration = this.data.closures[m[2]]; assert(declaration, "closure partial/unavailable"); equal(await this.backendGet(declaration.id), declaration, "closure declaration missing/changed"); const c = parse(declaration.content) as { ids: string[]; checkpoint: Signed }; const values: Signed[] = []; let totalBytes = 0;
+      for (const id of c.ids) { assert(this.data.objects[id], "closure hole: partial/unavailable"); const actual = await this.backendGet(id); equal(actual, this.data.objects[id], "closure bytes changed"); assert.equal((parse(actual.content) as {checkpoint:string}).checkpoint,c.checkpoint.id,"object/checkpoint coverage binding"); totalBytes += Buffer.byteLength(eventBytes(actual)); assert(totalBytes <= limits.pageBytes, "closure exceeds bounded slice: partial/unavailable"); values.push(actual); }
+      for (const e of values) this.enqueue(r, sub, ["EVENT", sub, e]); this.enqueue(r, sub, ["NOSEQ-COMPLETE", sub, m[2], declaration]); return;
+    }
+    throw new Error("unsupported public command"); // EVENT/COUNT/HLL/NEG/exports/admin are never forwarded.
+  }
+  async close(): Promise<void> { await this.tail; for (const r of this.readers) r.socket.terminate(); for (const { server, ws } of this.listeners) { ws.close(); await new Promise<void>(resolve => server.close(() => resolve())); } await this.backend?.close(); }
+}
