@@ -1,0 +1,137 @@
+{
+  "head": "c3ff4c921d5e7609007b8d793a5f4d5662b3d99a",
+  "artifacts": [
+    {
+      "path": "NOTICE",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:1b886fc0650aee616ad57d80adc88b04d7b0e44a"
+    },
+    {
+      "path": "fixtures/crypto/protocol/profile.json",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:02bd9477ba84543b013c7364247fe62ca4969819"
+    },
+    {
+      "path": "package-lock.json",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5ed4d1659f7b840fd03437e4bd5dedfd47128343"
+    },
+    {
+      "path": "package.json",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:05c85f016ef47dc35f9dad65e646ef9cc3a89ef9"
+    },
+    {
+      "path": "protocol-feasibility.config.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:57a59cbb3157e50a56ac0a718b8a4de02921e258"
+    },
+    {
+      "path": "protocol-feasibility.playwright.config.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b18d04d7724e1c1f4883ecbcf553b2b1f89b67fe"
+    },
+    {
+      "path": "protocol-feasibility.vite.config.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0fe7edcbd476b558908748f3d3bdaf9ce2e23f0d"
+    },
+    {
+      "path": "protocol-gateway.config.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c5ebe9fdbe36232830bf4f3fee80f560630933cb"
+    },
+    {
+      "path": "scripts/protocol-feasibility-evidence.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ee750e5778c92fa93c5e62da7499001abb3a2c49"
+    },
+    {
+      "path": "scripts/protocol-feasibility.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:6d409fd9ab7bbd91f32c0e26ee2b5d386069dea4"
+    },
+    {
+      "path": "scripts/protocol-gates.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:9cb2d923787d11cd20094947ece638e0f30954da"
+    },
+    {
+      "path": "scripts/protocol-relay-probe.mjs",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:74d2aa698192f34835233b366c700a6b81a1dae6"
+    },
+    {
+      "path": "tests/harness.test.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ffa78f80c655a4554313c7c689ade88089fa9208"
+    },
+    {
+      "path": "tests/protocol-feasibility/archive.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:058f2f20c80ba3179fa9150eb16329d98b19656a"
+    },
+    {
+      "path": "tests/protocol-feasibility/browser.test.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:a26583d07f0e168bbb4ee38a73ca857137f40f7f"
+    },
+    {
+      "path": "tests/protocol-feasibility/browser.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:161c6b11bc2347a6dad4e3f35e9286ac5ae8db2c"
+    },
+    {
+      "path": "tests/protocol-feasibility/crypto.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:7e29820983eb6039ea79019addb36b888c125cd2"
+    },
+    {
+      "path": "tests/protocol-feasibility/gateway-native.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ca8b21b187211d7f91ca181c77e4f34a5dadc0c8"
+    },
+    {
+      "path": "tests/protocol-feasibility/gateway-replication-client.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:7f4b7e9866c10fe81913c42fc92935092bc87b15"
+    },
+    {
+      "path": "tests/protocol-feasibility/gateway.test.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ddbbb6d6ce9cd0bd22baa51389f61f6a27394e1e"
+    },
+    {
+      "path": "tests/protocol-feasibility/gateway.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:321541af16d8188fa8b6fc3a84b4f6e315fb71f2"
+    },
+    {
+      "path": "tests/protocol-feasibility/index.html",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5c5e6958e4e61bbaded805b54d98c1b764dff06d"
+    },
+    {
+      "path": "tests/protocol-feasibility/node.test.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:a789dc8aa17ed4d5190d763266c96c1ffee3dc14"
+    },
+    {
+      "path": "tests/protocol-feasibility/opening.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b47314ae3cb420a3fca6f68c9fee86d137daabd4"
+    },
+    {
+      "path": "tests/protocol-feasibility/policies.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:f66969d09b4c08060947cc497ca17a9d23ae2537"
+    },
+    {
+      "path": "tests/protocol-feasibility/scenarios.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:e25140fa9fe5aebe2fd1b5d868899ce279aa1a64"
+    },
+    {
+      "path": "tests/protocol-feasibility/wire.ts",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:fe93ecd427c21d12c54f2c96e75881a0f62fd1d6"
+    },
+    {
+      "path": "tsconfig.protocol-feasibility.json",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:64449e5de4a1e1ba37c066eff12204177c47f3cb"
+    },
+    {
+      "path": "docs/confidentiality-and-recovery.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:3b0117d0831ae8b7a0b056ef7db8eeffc07585aa"
+    },
+    {
+      "path": "docs/crypto-feasibility.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c9ea7bfcab31535481692acaf917323cf4ae67cf"
+    },
+    {
+      "path": "docs/protocol-v0.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:61b19c44ef44cce65a5746c1fdf4a42654307023"
+    },
+    {
+      "path": "docs/relay-profile.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5b953d95844d7d8fdc818169945848a70eef9f19"
+    },
+    {
+      "path": "docs/toolchain.md",
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:50a95a408e0fe676fc977c2dc829a58759464faa"
+    }
+  ]
+}
