@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will deliver the final-Atseq assessment and focused Noseq documentation revisions, reconcile the separately landed P0/P1 evidence, obtain independent exact-head review, and land/sync only the approved documentation.","body":{"branch":"request/atseq-lessons"}}
+{"kind":"artifact","text":"Publish README.md at the exact #108 documentation candidate: completed Atseq assessment and focused conditional design/plan revision; no runtime changes or protocol adoption.","body":{"commit":"6730fd84628eef7f9eb8f7cf8bdf043ed126f3f0","path":"README.md"}}
