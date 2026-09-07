@@ -9,16 +9,19 @@ The proposed model orders authenticated actions, lets authorized participants
 decrypt and fold them, and renders the fold results. Results may be queryable
 databases, JSON bound directly to an interface, or geometry buffers.
 
-This repository currently contains a **draft design**, with no runtime
-implementation. Publication of the note does not adopt its proposed architecture
-or authorize implementation. Start with the
+This repository contains a **draft architecture**, a working P0 build/test
+baseline and bounded P1 crypto/protocol/recovery investigations. Full G1–G5 gates
+remain unpassed; there is no completed application runtime or deployment.
+Separate work requests govern implementation. Start with the
 [architecture note](notes/2026-09-06-noseq-architecture.md) and
 [notes index](notes/README.md).
 
 The [prototype implementation plan](plans/001-confidential-application-prototype.md)
 maps the [independent design review](plans/2026-09-06-design-review.md) to ordered
 work packages and proposed verification gates. The [plans index](plans/README.md)
-tracks implementation stages; no runtime work is complete.
+tracks actual stage status. The [final Atseq assessment](notes/2026-09-07-atseq-final-assessment.md)
+updates the design and plan with completed spike evidence, measured prefix costs
+and the unvalidated populated-document/3D direction.
 
 ## Repository workroom
 
