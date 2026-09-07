@@ -6,9 +6,9 @@ import {
   startNative,
   type Frame,
 } from "../protocol-feasibility/gateway-native.ts";
-import { remove } from "../protocol-feasibility/crypto.ts";
-import { small, refused } from "./adversarial.ts";
-import { VerifiedHistory } from "./archive.ts";
+import { add, remove, submission } from "../protocol-feasibility/crypto.ts";
+import { refused } from "./adversarial.ts";
+import { VerifiedHistory, deliverGrant, receiveGrant } from "./archive.ts";
 import { SegmentedGateway } from "./gateway.ts";
 import { closurePlan, planDeclaration } from "./eligibility.ts";
 import { diskStore } from "./store-node.ts";
@@ -24,14 +24,26 @@ import {
   type ObjectStore,
   type Signed,
 } from "./wire.ts";
-import { key, collectWorlds, resetWorlds } from "./fixture.ts";
+import { key, world, collectWorlds, resetWorlds } from "./fixture.ts";
+import { joinedStream } from "./client.ts";
 export async function runNative(directory: string) {
   resetWorlds();
   mkdirSync(directory);
   const backing = await diskStore(join(directory, "objects")),
-    { w, p } = await small(backing, "native"),
+    w = await world(backing, "native"),
     trace: Frame[] = [],
     observed: unknown[] = [];
+  await w.apply("first", key(1002));
+  await w.sealer.flush();
+  await w.control();
+  await w.apply("second", key(1004));
+  await w.sealer.flush();
+  await w.apply("first", key(1002));
+  const admitted = await w.control([add(w.carolDevice)]),
+    p = await w.sealer.export(w.owner);
+  check(admitted.welcome, "native newcomer real Welcome");
+  const delivery = deliverGrant(key(201), w.carolDevice.binding.device, w.ctx, p);
+  writeFileSync(join(directory, "delivery.json"), canonical(delivery), { flag: "wx" });
   const native = await startNative(join(directory, "strfry")),
     proxy = await readbackProxy(native.url, trace),
     statePath = join(directory, "gateway.json");
@@ -137,7 +149,7 @@ export async function runNative(directory: string) {
     await command(operator, ["SEG-COMPLETE", d.id], d.id);
     observed.push("actual T beyond F refused until missing final ordered entry is retained");
     observed.push("actual complete plan retained after uncertain-write retry and reconstruction");
-    const bob = await connect(gateway.url, "segmented-bob", key(202));
+    const bob = await connect(gateway.url, "segmented-newcomer-carol", key(203));
     bob.send(["SEG-OPEN", "offer", p.checkpoint.id, 6]);
     const offer = await bob.take((m) => m[0] === "SEG-OFFER" && m[1] === "offer");
     check(
@@ -176,18 +188,44 @@ export async function runNative(directory: string) {
     );
     proxy.replaceEvent.clear();
     observed.push("actual suppressed/mismatched signed backend pages refused without page EOSE");
+    const deliveredKey = receiveGrant(
+      delivery,
+      key(203),
+      w.ownerDevice.binding.device,
+      w.ctx,
+      p.checkpoint.id,
+      p.locator.id,
+    );
     const verified = await VerifiedHistory.recover(
       socketStore(bob),
       w.root.event,
       p.checkpoint,
       p.locator,
-      p.grantKey,
+      deliveredKey,
       { owner: w.ctx.owner, genesis: w.ctx.genesis, checkpoint: p.checkpoint.id, tip: w.owner.tip },
       new Records(backing, "socket-recovered"),
     );
     check(
       verified.log.length === 6 && verified.descriptors.length === 3 && pageCount > 3,
       "real multi-interval multi-page decrypted history",
+    );
+    const newcomer = await joinedStream(
+      w.ctx,
+      w.env,
+      w.carolDevice,
+      admitted.welcome,
+      submission(admitted.pending.event, w.ctx).welcome!,
+      verified.publicState,
+      verified.log,
+    );
+    equal(
+      await newcomer.projection(),
+      await w.owner.projection(),
+      "actual native newcomer full recovered projection",
+    );
+    w.peers.push(newcomer);
+    observed.push(
+      "newly admitted member verifies signed NIP44 grant and joins actual Welcome using socket-recovered full history",
     );
     await w.apply("unsealed suffix", key(1600));
     const suffix = (await w.owner.log.get(7)).record.event;
@@ -252,7 +290,7 @@ export async function runNative(directory: string) {
     observed.push("beyond-checkpoint object refused at newer retained F");
     bob.send(["SEG-GET", "before-removal", p.checkpoint.id, [w.root.event.id]]);
     await bob.take((m) => m[0] === "EOSE" && m[1] === "before-removal");
-    const removal = await w.control([remove(w.owner, w.bobDevice)]);
+    const removal = await w.control([remove(w.owner, w.carolDevice)]);
     proxy.dropAck.add(removal.event.id);
     await command(operator, ["EVENT", removal.event], removal.event.id, false);
     check(
@@ -277,7 +315,7 @@ export async function runNative(directory: string) {
     check(!gateway.readable, "control fence reconstructed");
     await gateway.start(proxy.url);
     operator = await connect(gateway.operatorUrl, "segmented-operator-removal", key(109));
-    const old = await connect(gateway.url, "segmented-removed-bob", key(202));
+    const old = await connect(gateway.url, "segmented-removed-carol", key(203));
     old.send(["SEG-OPEN", "reconstructed", p.checkpoint.id, 6]);
     await old.take((m) => m[0] === "CLOSED" && m[1] === "reconstructed");
     await command(operator, ["EVENT", removal.event], removal.event.id);
@@ -297,6 +335,9 @@ export async function runNative(directory: string) {
       case: "native-segmented-composition",
       context: w.ctx,
       checkpoint: p.checkpoint.id,
+      delivery: delivery.id,
+      welcome: submission(admitted.pending.event, w.ctx).welcome,
+      newcomer: w.carolDevice.binding.device,
       planHash: plan.hash,
       plannedBytes: plan.total,
       reservedBytes: reserved,

@@ -270,11 +270,26 @@ export function verifySegmentedFiles(e: SegmentedEvidence, directory: string) {
       assert.equal(observed.native.source, protocolProfile().native.source);
       assert.equal(observed.native.binarySha256, protocolProfile().native.binarySha256);
       assert.equal(observed.native.configSha256, e.native["strfry/strfry.conf"]);
-      assert.equal(observed.observed.length, 7);
+      assert.equal(observed.observed.length, 8);
       assert.equal(observed.segments.length, 3);
       assert(observed.pageCount > 3 && observed.T === 6 && observed.F > observed.T);
       assert.equal(observed.node, e.context.protocol.ordered.preflight.baseline.runtime.node);
       verifyFixtures(observed.fixtures);
+      const ctx = observed.context as Context,
+        delivery = read2(readBounded(join(directory, "native/delivery.json")), "delivery", ctx),
+        delivered = JSON.parse(delivery.content);
+      assert.equal(delivery.id, observed.delivery);
+      assert.equal(delivered.recipient, observed.newcomer);
+      assert.equal(delivered.checkpoint, observed.checkpoint);
+      const original = observed.fixtures[0].ordered[5],
+        ordered = JSON.parse(original.content),
+        admission = JSON.parse(ordered.admission.content),
+        submission = JSON.parse(ordered.submission.content);
+      assert.equal(submission.welcome, observed.welcome);
+      assert(admission.members.some((m: any) => m.device === observed.newcomer));
+      assert(
+        admission.members.some((m: any) => m.device === delivery.pubkey && m.account === ctx.owner),
+      );
       continue;
     }
     assert.equal(observed.result.profile, domain);

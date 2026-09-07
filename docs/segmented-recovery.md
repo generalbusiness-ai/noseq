@@ -298,7 +298,9 @@ The native test verifies the prepared private archive before requesting stronger
 retention, refuses a signed T=6 while F=5 until the last ordered entry arrives,
 rejects genuinely suppressed or wrong signed backend page events, loses an actual native EOSE, reconstructs the file with uncertainty
 still charged, retries and verifies complete recovery over multiple socket
-pages. It tests exact prepared signed-byte capacity and one byte less using a
+pages. The reader is a newly admitted Carol: she verifies the owner device
+signature and NIP-44 grant, then joins the actual Welcome against the socket-
+verified history before receiving later live crypto and her removal. It tests exact prepared signed-byte capacity and one byte less using a
 smaller configured fixture ceiling, preserving the previous T on refusal and
 interrupted transfer. The production ceiling remains 256 MiB; this is not a
 256 MiB physical-store or 10,000-event benchmark. Uploads are sequential, with at
