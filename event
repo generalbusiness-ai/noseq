@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c2912c04c6fd661af709fbcc02deeb04649a8e0c","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/gateway-native.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:cca3b1c6506c2eada01723c3ff8aef1d6a63f656","text":"Merge retired a covered predecessor; the successor is at segmented-recovery.playwright.config.ts."}
