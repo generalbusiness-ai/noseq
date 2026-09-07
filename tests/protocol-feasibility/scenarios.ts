@@ -66,6 +66,19 @@ export const scenarios = {
     negative["wrong-instance"] = await fail(() => VerifiedArchive.verify(original, { ...rootOf(w), genesis: "f".repeat(64) }));
     note({ type: "archive-rejections", negative, checksBeforeInstallation: true });
   },
+  async "archive-capacity-boundaries"() {
+    const w = await setup();
+    while (w.owner.data.events.length < limits.archiveEntries) await apply(w,w.owner,"archive maximum " + w.owner.data.events.length,[w.owner]);
+    const maximum = await archiveOf(w); const verified = await VerifiedArchive.verify(maximum,rootOf(w));
+    check(verified.snapshot.events.length === limits.archiveEntries,"maximum archive prefix did not verify");
+    await apply(w,w.owner,"one beyond archive maximum",[w.owner]);
+    const overEntries = await fail(()=>archiveOf(w),"archive prefix capacity");
+    const key = hex(random()); const value = "x".repeat(limits.archive - 2); // Canonical string quotes make exactly 16 MiB.
+    const encrypted = await encrypt(value,key,w.g.context,1,maximum.checkpoint.id);
+    check(await decrypt(encrypted,key,w.g.context) === value,"maximum export bytes did not roundtrip");
+    const overBytes = await fail(()=>encrypt(value+"x",key,w.g.context,1,maximum.checkpoint.id),"archive export capacity");
+    note({type:"archive-capacity-boundaries",maximumVerifiedEntries:limits.archiveEntries,refusedEntries:limits.archiveEntries+1,maximumRoundtrippedPlaintextBytes:limits.archive,refusedPlaintextBytes:limits.archive+1,overEntries,overBytes,adoption:"longer admitted histories require a separately reviewed archive composition or instance-lifetime decision; no truncated prefix"});
+  },
   async "fresh-device-and-all-device-loss"() {
     let w: World | null = await setup(); await apply(w, w.bob, "full prior history");
     const c = await w.owner.stageCommit([add(w.carolDevice)]); const ordered = await w.journal.append(c.event, c.admission);
@@ -213,7 +226,7 @@ export const scenarios = {
     for (const [name, value] of Object.entries({ duplicate: raw.replace('{"content":', '{"kind":8792,"content":'), whitespace: " " + raw,
       unknown: canonical({ ...e, extra: true }), fractional: raw.replace('"kind":8792', '"kind":8792.0'), exponent: raw.replace('"kind":8792', '"kind":8.792e3') })) negatives[name] = await fail(() => readEvent(value));
     for (const [name, value] of Object.entries({ negativeZero: "-0", unsafe: "9007199254740992", depth: "[".repeat(34) + "0" + "]".repeat(34), surrogate: '"\\ud800"' })) negatives[name] = await fail(() => parse(value));
-    for (const s of ["Zg", "Zh==", "Zg==\n", "****"]) negatives[`base64-${s.length}-${s[0]}`] = await fail(() => unb64(s));
+    for (const s of ["Zg", "Zh==", "Zg==\n", "****", "A===", "=AAA", "AA=A", "===="]) negatives[`base64-${s.length}-${s[0]}`] = await fail(() => unb64(s));
     const cross = { ...w.g.context, definition: "f".repeat(64) }; negatives["foreign-definition"] = await fail(() => read(eventBytes(sub), "submission", cross));
     const duplicateTags = signRaw(w.bob.keys.deviceKey, sub.kind, [...sub.tags, sub.tags[0]!], sub.content); negatives["duplicate-tags"] = await fail(() => read(eventBytes(duplicateTags), "submission", w.g.context));
     const reencrypted = await w.bob.stageAction("Nostr proof: café / 雪 / \\ / \"", logical); check(reencrypted.id !== sub.id, "different ciphertext submission identity");

@@ -13,5 +13,5 @@ try {
     assert(statSync(path).size <= 1_048_576); const e: unknown = JSON.parse(readFileSync(path, "utf8"));
     validateProtocol(e, protocolContext()); verifyProtocolFiles(e, dirname(path));
   }
-  throw new Error("full G1-G5 closure pending: independent exact-profile review and explicit adoption are absent; isolated prefix gateway is not a production implementation; see docs/protocol-v0.md");
+  throw new Error("full G1-G5 closure pending: G2-LONG-HISTORY archive composition unresolved; independent exact-profile review and explicit adoption are absent; isolated prefix gateway is not a production implementation; see docs/protocol-v0.md");
 } catch (error) { console.error(`stage not implemented: protocol gate activation; ${String(error)}`); process.exitCode = 1; }

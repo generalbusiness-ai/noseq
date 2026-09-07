@@ -121,17 +121,27 @@ test("feasibility.gateway.G5-F05",()=>caseRun("G5-F05",async(d,trace,r,notes)=>{
   notes.push({tip40,removal41:removal.id,explicitExposure:"Bob can retrieve previously unfetched old ciphertext/metadata at 40 despite unseen primary removal 41",globallyCurrent:false});
 }));
 test("feasibility.gateway.G5-F06",()=>caseRun("G5-F06",async(d,trace,r,notes)=>{
-  const x=await world(d,trace,r);const old=readFileSync(x.g.statePath);const c=await x.w.owner.stageCommit([remove(x.w.owner,x.w.bobDevice)]);const removal=await x.w.journal.append(c.event,c.admission);await x.w.owner.receive(removal);await x.ingest(removal);
+  const x=await world(d,trace,r);const old=readFileSync(x.g.statePath);const oldTip=x.g.tip;
+  const middle=await apply(x.w,x.w.owner,"withheld dependency",[x.w.owner]);
+  const c=await x.w.owner.stageCommit([remove(x.w.owner,x.w.bobDevice)]);const removal=await x.w.journal.append(c.event,c.admission);await x.w.owner.receive(removal);
+  await x.ingest(removal,false);assert.equal(x.g.readable,false);assert.equal(x.g.tip,oldTip);
+  const learnedPath=join(d,"learned-control-state.json");writeFileSync(learnedPath,readFileSync(x.g.statePath));
+  const learned=new Gateway(x.w.g.context,x.w.g.event,learnedPath,x.w.starting,founder(x.w),[publicKey(key(50))],trace);learned.loadIntact();await learned.start(x.n.url);r.gateways.push(learned);
+  assert.equal(learned.readable,false);assert.equal(learned.tip,oldTip);assert.equal(learned.buffer.get(3)?.id,removal.id);
+  for(const name of ["learned-bob","learned-reconnect"]){const p=await Peer.connect(learned.url,name,trace);r.peers.push(p);await p.auth(key(32),learned.url);p.send(["REQ","old-cursor",x.filter({noseq_tip:oldTip})]);await p.take(m=>m[0]==="CLOSED"&&m[1]==="old-cursor");p.send(["NOSEQ-CLOSURE","old-closure",oldTip]);await p.take(m=>m[0]==="CLOSED"&&m[1]==="old-closure");assert(!p.messages.some(m=>m[0]==="EVENT"));}
+  const lo=await Peer.connect(learned.operatorUrl,"learned-operator",trace);r.peers.push(lo);await lo.auth(key(50),learned.operatorUrl);lo.send(["EVENT",middle]);assert.equal((await lo.take(m=>m[0]==="OK"&&m[1]===middle.id))[2],true);assert.equal(learned.tip,removal.id);assert.equal(learned.controlGap,false);assert(!learned.data.public.members.some(m=>m.device===publicKey(key(32))));
+  const after=await Peer.connect(learned.url,"learned-after-fill",trace);r.peers.push(after);await after.auth(key(32),learned.url);after.send(["REQ","still-denied",x.filter({noseq_tip:oldTip})]);await after.take(m=>m[0]==="CLOSED");
+  await x.ingest(middle);assert.equal(x.g.tip,removal.id);
   const intact=new Gateway(x.w.g.context,x.w.g.event,x.g.statePath,x.w.starting,founder(x.w),[publicKey(key(50))],trace);intact.loadIntact();await intact.start(x.n.url);r.gateways.push(intact);const p=await Peer.connect(intact.url,"intact-bob",trace);r.peers.push(p);await p.auth(key(32),intact.url);p.send(["REQ","denied",x.filter()]);await p.take(m=>m[0]==="CLOSED");assert.equal(intact.tip,removal.id);
   const stalePath=join(d,"stale-state.json");writeFileSync(stalePath,old);const restored=new Gateway(x.w.g.context,x.w.g.event,stalePath,x.w.starting,founder(x.w),[publicKey(key(50))],trace,true);restored.loadIntact();await restored.start(x.n.url);r.gateways.push(restored);const b=await Peer.connect(restored.url,"restored-bob",trace);r.peers.push(b);await b.auth(key(32),restored.url);b.send(["REQ","fenced",x.filter()]);await b.take(m=>m[0]==="CLOSED");
   const op=await Peer.connect(restored.operatorUrl,"restore-operator",trace);r.peers.push(op);await op.auth(key(50),restored.operatorUrl);
-  const fence=sign(key(31),"proof",x.w.g.context,{type:"trusted-high-water",challenge:restored.reconcileChallenge,position:2,tip:removal.id});op.send(["RECONCILE",fence]);await op.take(m=>m[0]==="NOTICE");assert.equal(restored.readable,false);
-  op.send(["EVENT",removal]);await op.take(m=>m[0]==="OK");op.send(["RECONCILE",fence]);assert.equal((await op.take(m=>m[0]==="OK"&&m[1]===fence.id))[2],true);b.send(["REQ","still-revoked",x.filter()]);await b.take(m=>m[0]==="CLOSED");
+  const fence=sign(key(31),"proof",x.w.g.context,{type:"trusted-high-water",challenge:restored.reconcileChallenge,position:3,tip:removal.id});op.send(["RECONCILE",fence]);await op.take(m=>m[0]==="NOTICE");assert.equal(restored.readable,false);
+  op.send(["EVENT",removal]);await op.take(m=>m[0]==="OK");op.send(["EVENT",middle]);await op.take(m=>m[0]==="OK"&&m[1]===middle.id);op.send(["RECONCILE",fence]);assert.equal((await op.take(m=>m[0]==="OK"&&m[1]===fence.id))[2],true);b.send(["REQ","still-revoked",x.filter()]);await b.take(m=>m[0]==="CLOSED");
   const gapPath=join(d,"gap-state.json");const gap=new Gateway(x.w.g.context,x.w.g.event,gapPath,x.w.starting,founder(x.w),[publicKey(key(50))],trace);await gap.start(x.n.url);r.gateways.push(gap);const go=await Peer.connect(gap.operatorUrl,"gap-operator",trace);r.peers.push(go);await go.auth(key(50),gap.operatorUrl);go.send(["EVENT",removal]);assert.equal((await go.take(m=>m[0]==="OK"))[2],false);assert.equal(gap.readable,false);assert.equal(gap.data.events.length,0);
   const half=sign(key(39),"order",x.w.g.context,{...entry(x.w.journal.events[0]!,x.w.g.context),admission:null});go.send(["EVENT",half]);assert.equal((await go.take(m=>m[0]==="OK"))[2],false);assert.equal(gap.data.events.length,0);
-  go.send(["EVENT",x.w.journal.events[0]]);assert.equal((await go.take(m=>m[0]==="OK"))[2],true);assert.equal(gap.tip,removal.id);
+  go.send(["EVENT",x.w.journal.events[0]]);assert.equal((await go.take(m=>m[0]==="OK"))[2],true);go.send(["EVENT",middle]);assert.equal((await go.take(m=>m[0]==="OK"&&m[1]===middle.id))[2],true);assert.equal(gap.tip,removal.id);
   const fork=sign(key(39),"order",x.w.g.context,{...entry(removal,x.w.g.context),previous:"f".repeat(64)});go.send(["EVENT",fork]);assert.equal((await go.take(m=>m[0]==="OK"))[2],false);assert.equal(gap.readable,false);
-  notes.push({intactTip:intact.tip,staleRestoreRequiresExternalHighWater:true,externalAuthority:"owner-signed fresh challenge proof supplied by trusted external fixture; not a local backup freshness proof",gapAndHalfBlocked:true,forkHalted:true,persistence:"actual JSON file reconstruction, not crash/fsync/P5 durability"});
+  notes.push({intactTip:intact.tip,learnedOutOfOrderControl:{oldTip,withheld:middle.id,removal:removal.id,reconstructionDeniedOldCursorClosureReconnect:true,dependencyFillPreservedRemoval:true},staleRestoreRequiresExternalHighWater:true,externalAuthority:"owner-signed fresh challenge proof supplied by trusted external fixture; not a local backup freshness proof",gapAndHalfBlocked:true,forkHalted:true,persistence:"actual JSON file reconstruction, not crash/fsync/P5 durability"});
 }));
 test("feasibility.gateway.G5-F07",()=>caseRun("G5-F07",async(d,trace,r,notes)=>{
   const x=await world(d,trace,r);const firstCheckpoint=(await createArchive(x.w.owner,x.w.g.event,x.w.definition,x.w.starting)).checkpoint;for(let i=0;i<129;i++){const e=await apply(x.w,x.w.owner,"same-second-"+i,[x.w.owner]);await x.ingest(e);}const fixed=x.g.tip;const bob=await x.reader(key(32),"paging-bob");
@@ -153,8 +163,30 @@ test("feasibility.gateway.G5-F08",()=>caseRun("G5-F08",async(d,trace,r,notes)=>{
   const stranger=await Peer.connect(x.g.operatorUrl,"unauthorized-writer",trace);r.peers.push(stranger);await stranger.auth(key(32),x.g.operatorUrl);stranger.send(["EVENT",x.w.journal.events[0]]);await stranger.take(m=>m[0]==="NOTICE");
   // Exact unsupported NIP-70 protected publication is refused by this profile's exact tag parser; no tag stripping.
   const original=x.w.journal.events[0]!;const protectedEvent=signRaw(key(39),original.kind,[...original.tags,["-"]],original.content);await x.ingest(protectedEvent,false);
+  const archive=await createArchive(x.w.owner,x.w.g.event,x.w.definition,x.w.starting);
+  const object=async()=>sign(x.w.owner.keys.deviceKey,"chunk",x.w.g.context,await encrypt(archive,hex(random()),x.w.g.context,1,archive.checkpoint.id));
+  const firstObject=await object(),secondObject=await object();
+  const declaration=(ids:string[])=>sign(key(31),"proof",x.w.g.context,{type:"retention-closure",tip:x.g.tip,checkpoint:archive.checkpoint,ids});
+  const firstClosure=declaration([firstObject.id]),secondClosure=declaration([secondObject.id]);
+  const send=async(p:Peer,route:string,e:Signed,success=true)=>{p.send([route,e]);const reply=await p.take(m=>success?m[0]==="OK"&&m[1]===e.id:m[0]==="NOTICE");if(success)assert.equal(reply[2],true);else assert(String(reply[1]).includes("retention full"));};
+  for(const [route,e] of [["OBJECT",firstObject],["CLOSURE",firstClosure],["OBJECT",secondObject],["CLOSURE",secondClosure]] as [string,Signed][]){const before=x.g.journalBytes;await send(x.op,route,e);assert.equal(x.g.journalBytes,before+Buffer.byteLength(eventBytes(e)));await send(x.op,route,e);assert.equal(x.g.journalBytes,before+Buffer.byteLength(eventBytes(e)));}
+  assert.equal(x.g.data.closures[x.g.tip]!.id,secondClosure.id);assert(x.g.data.retained[firstClosure.id]);
+  const accounted=Object.values(x.g.data.retained).reduce((n,e)=>n+Buffer.byteLength(eventBytes(e)),0);assert.equal(x.g.journalBytes,accounted);
+  const quotaPath=join(d,"quota-state.json");writeFileSync(quotaPath,readFileSync(x.g.statePath));
+  const quota=new Gateway(x.w.g.context,x.w.g.event,quotaPath,x.w.starting,founder(x.w),[publicKey(key(50))],trace);quota.loadIntact();assert.equal(quota.journalBytes,accounted);await quota.start(x.n.url);r.gateways.push(quota);
+  const qo=await Peer.connect(quota.operatorUrl,"quota-operator",trace);r.peers.push(qo);await qo.auth(key(50),quota.operatorUrl);
+  for(const [route,e] of [["EVENT",original],["OBJECT",firstObject],["CLOSURE",firstClosure]] as [string,Signed][])await send(qo,route,e);
+  assert.equal(quota.journalBytes,accounted);assert.equal(Object.keys(quota.data.retained).length,5);
   const before=x.g.data.events.length;x.g.journalBytes=limits.journal;const extra=await apply(x.w,x.w.owner,"capacity",[x.w.owner]);await x.ingest(extra,false);assert.equal(x.g.data.events.length,before);
+  const excessObject=await object(),excessClosure=declaration([firstObject.id,secondObject.id]);
+  await send(x.op,"OBJECT",excessObject,false);await send(x.op,"CLOSURE",excessClosure,false);assert.equal(x.g.journalBytes,limits.journal);assert.equal(Object.keys(x.g.data.retained).length,5);
+  // At the same boundary, exact retries still succeed without charging or evicting any retained identity.
+  for(const [route,e] of [["EVENT",original],["OBJECT",firstObject],["CLOSURE",firstClosure]] as [string,Signed][])await send(x.op,route,e);
+  assert.equal(x.g.journalBytes,limits.journal);
+  const storage=await Peer.connect(x.n.url,"quota-native-readback",trace);r.peers.push(storage);
+  storage.send(["REQ","retained",{ids:Object.keys(x.g.data.retained),limit:10}]);await storage.take(m=>m[0]==="EOSE"&&m[1]==="retained");assert.equal(storage.messages.filter(m=>m[0]==="EVENT"&&m[1]==="retained").length,5);
+  storage.send(["REQ","refused",{ids:[extra.id,excessObject.id,excessClosure.id],limit:10}]);await storage.take(m=>m[0]==="EOSE"&&m[1]==="refused");assert(!storage.messages.some(m=>m[0]==="EVENT"&&m[1]==="refused"));
   const fresh=await x.reader(key(32),"queue-reader");x.g.paused=true;for(let i=0;i<129;i++)fresh.send(["REQ","q",x.filter()]);await fresh.take(m=>m[0]==="CLOSED"&&m[1]==="q");x.g.resume();
   const oversize=await x.reader(key(32),"oversized-frame");oversize.send(["REQ","over",{blob:"x".repeat(limits.frame)}]);await Promise.race([new Promise<void>(resolve=>oversize.socket.once("close",()=>resolve())),pause(2000)]);assert.equal(oversize.closed,true);
-  notes.push({replicatorKeySeparateFromSequencer:true,protectedEvent:"unsupported/refused without stripping; bare author-authenticated path measured separately",retentionRefusal:true,originalRetained:before,limits: x.g.metadata(),remaining:"production retry scheduling, physical capacity and independent failure domains remain P5"});
+  notes.push({replicatorKeySeparateFromSequencer:true,protectedEvent:"unsupported/refused without stripping; bare author-authenticated path measured separately",retentionRefusal:true,originalRetained:before,aggregateAccounting:{accounted,retainedIdentities:5,supersededDeclarationStillRetained:firstClosure.id,allThreeRoutesRefusedAtBoundary:true,duplicateRetriesUncharged:true,reconstructedCounterMatches:true,nativeRefusedIdsAbsent:true},limits: x.g.metadata(),remaining:"production retry scheduling, physical capacity and independent failure domains remain P5"});
 }));

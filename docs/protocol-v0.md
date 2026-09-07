@@ -30,6 +30,8 @@ preflight still reproduces the incompatible Marmot proof and eager retraction
 behavior. Neither current Marmot proof IDs nor branch witnesses, withdrawal
 records or provisional-view callbacks are accepted inputs to this Noseq profile.
 
+The selected protocol is MLS 1.0, [RFC 9420](https://www.rfc-editor.org/rfc/rfc9420.html),
+with wire protocol version 1 (`mls10: 1` in the pinned `src/protocolVersion.ts`).
 MLS suite 1 is `MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519`: X25519 HPKE,
 AES-128-GCM, SHA-256, Ed25519. The same default provider and upstream frozen lock
 are retained. The machine profile pins the public API through the P1b profile,
@@ -269,7 +271,7 @@ export; it never truncates the advertised prefix. Large archive transport and
 retention behavior remain P5/P6 work.
 
 `probe:protocol-feasibility` can exit zero only for the exact required bounded
-observations, including P0 and P1a/P1b prerequisites, 30 client cases, eight real local
+observations, including P0 and P1a/P1b prerequisites, 32 client cases, eight real local
 gateway cases and the native relay limitation observations. `verify:protocol-feasibility` revalidates source/tree, locks,
 fixture/document/profile/library bytes, runtime, raw reports, every mandatory
 case, generated browser bundle and native inputs/results. Runs have unique UUIDs
@@ -286,8 +288,12 @@ a circular demand for an approval inside the commit being reviewed:
 1. Freeze this source/profile and obtain actual independent exact-head review;
    record its verdict and requester ratification in GitSeq. This approves only
    the stated investigation/publication scope.
-2. Review the proposed prefix-read exposure and archive-trust decisions explicitly,
-   commission the missing executable cases, and obtain independent review of
+2. Review the proposed prefix-read exposure and archive-trust decisions explicitly.
+   Resolve **G2-LONG-HISTORY**: the current 128-entry/16 MiB archive refusal
+   cannot recover every longer admitted prefix. Define and review authenticated
+   segmented coverage/key custody, or separately authorize a matching instance
+   lifetime and any Plan 001 deviation; this candidate chooses neither.
+   Commission the resulting executable cases, and obtain independent review of
    that immutable profile and its complete G1–G5 evidence.
 3. An explicitly authorized activation change must verify the detached signed
    decision/ratification and complete evidence against that immutable profile,

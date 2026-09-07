@@ -53,10 +53,16 @@ export function fields(x: unknown, expected: string[]): asserts x is Record<stri
 }
 export const hashBytes = async (bytes: Uint8Array): Promise<string> => hex(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>)));
 export const hash = (x: unknown): Promise<string> => hashBytes(utf8.encode(canonical(x)));
-export function b64(bytes: Uint8Array): string { let s = ""; for (const b of bytes) s += String.fromCharCode(b); return btoa(s); }
+export function b64(bytes: Uint8Array): string {
+  let s = ""; for (let offset=0;offset<bytes.length;offset+=16384) s += String.fromCharCode(...bytes.subarray(offset,offset+16384)); return btoa(s);
+}
 export function unb64(s: unknown, max: number = limits.event): Uint8Array {
-  check(typeof s === "string" && s.length <= Math.ceil(max / 3) * 4 && /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(s), "base64 bound/alphabet");
-  const bytes = Uint8Array.from(atob(s), c => c.charCodeAt(0)); check(bytes.length <= max && b64(bytes) === s, "noncanonical base64"); return bytes;
+  check(typeof s === "string" && s.length <= Math.ceil(max / 3) * 4 && s.length % 4 === 0, "base64 bound/alphabet");
+  const padding = s.endsWith("==") ? 2 : s.endsWith("=") ? 1 : 0;
+  // A flat scan stays bounded at the full archive limit; repeating a grouped regexp overflowed V8's regexp stack there.
+  check(!/[^A-Za-z0-9+/]/.test(s.slice(0,s.length-padding)),"base64 bound/alphabet");
+  const decoded = atob(s); const bytes = new Uint8Array(decoded.length); for(let i=0;i<decoded.length;i++) bytes[i]=decoded.charCodeAt(i);
+  check(bytes.length <= max && b64(bytes) === s, "noncanonical base64"); return bytes;
 }
 export interface Context { instance: string; genesis: string; definition: string; owner: string; sequencer: string }
 export type Signed = Event;

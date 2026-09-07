@@ -186,7 +186,7 @@ The application build and hosted CI remain P0-only. `npm ci`, `npm run check`
 and `npm run build` still work without the separate upstream source caches.
 `probe:protocol-feasibility` fetches/checks pinned reference sources, runs the P0
 harness and unchanged P1a/P1b prerequisites, checks the dedicated P1c TypeScript
-configuration, builds its actual Chromium page and runs 15 Node plus 15 Chromium
+configuration, builds its actual Chromium page and runs 16 Node plus 16 Chromium
 cases, then eight actual gateway/strfry socket cases. Its browser uses free
 loopback port 4176. The native relay probe allocates
 fresh loopback ports and stops its children. There is no deployment command.
@@ -247,3 +247,18 @@ failures alongside later passes, including development of message-specific
 archive openings and separate owner-vault custody. Only a clean exact-head
 candidate run plus actual independent review supports the publication claim.
 Hosted P0 success still cannot stand in for any P1c crypto/relay result.
+
+The P1c review correction adds actual archive maximum/+1 refusal vectors and
+gateway regression cases for learned-control reconstruction and aggregate
+retention accounting. Earlier passing suites remain evidence of their narrower
+coverage: the reviewer's retained extra socket experiment exposed these two gaps.
+All prior records remain unchanged. G2-LONG-HISTORY composition and full gate
+activation remain explicit pending adoption work.
+
+The added full-size export vector initially exposed a V8 regexp stack overflow
+in the grouped base64 validator. The corrected flat alphabet/padding scan keeps
+canonical padding-bit verification and roundtrips the full bound. Its failed
+exploratory run remains alongside the corrected runs; it is not an acceptance
+result. The first focused gateway retry also used a relative output path where
+the native launcher requires the runner's absolute run directory, and failed
+before service execution; the absolute-directory rerun is recorded separately.

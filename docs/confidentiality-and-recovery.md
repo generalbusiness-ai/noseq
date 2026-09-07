@@ -90,7 +90,22 @@ password-recovery mechanism.
 
 The conservative archive bound is 128 ordered entries and 16 MiB serialized
 plaintext. A full-prefix export refuses above either cap. The prefix is never
-silently shortened to fit. Ciphertext/tag/base64 expansion must fit a separate
+silently shortened to fit. The `archive-capacity-boundaries` case verifies a
+real 128-entry archive, refuses the 129th, roundtrips exactly 16 MiB through
+AES-GCM and refuses one more plaintext byte in both Node and Chromium. These
+are bounds of the current export implementation, **not a selected 128-entry
+instance lifetime**. Journal/gateway admission can continue beyond them.
+
+The named **G2-LONG-HISTORY** adoption decision is therefore still open: define
+and independently review bounded authenticated archive segments whose coverage,
+root/checkpoint/definition closure and retained-key custody compose over every
+longer admitted prefix, or separately authorize a matching bounded instance
+lifetime and its deviation from Plan 001. This package selects neither and does
+not change the planned larger workloads. Splitting encrypted file bytes or
+increasing a relay page cannot establish that missing composition contract.
+Full G2/profile adoption must wait for this decision and its executable evidence.
+
+Ciphertext/tag/base64 expansion must fit a separate
 file/export allocation. Relay transport must split large encrypted material
 into authenticated chunks with complete retention receipts; the P1c 16 KiB
 chunk vector measures expansion but does not implement P5 retention, a complete
@@ -181,7 +196,8 @@ the stated uncompromised-key/trusted-host assumption, not metadata anonymity.
 | Malicious current member | Exposed authorized history/current content | Exposed | Visible | Visible | Known | Visible | Visible | Can copy plaintext and submit opaque invalid data that safely stalls peers. Cannot forge another account proof; failure/admission fixtures |
 | Stolen unlocked device / owner vault | Retained and future while admitted | Exposed | Device/account keys exposed | Visible | Known | Visible | Visible | Real removal limits future decrypt; copied owner account key still forges owner authority. No owner transfer or secure-erasure claim |
 | Leaked shared encrypted archive alone | Hidden under random key | Hidden | Wrapper owner/context/checkpoint visible | Ciphertext only, sizes leak | Visible | Export generation/context leak | Visible | AES-GCM wrong-key/tamper tests; no password resistance claim |
-| Leaked archive plus key or owner checkpoint authority | Historical interval exposed | Exposed | Historical identities exposed | Historical roster exposed | Known | Historical event times | Full history size | Shared openings do not grant continuing MLS state. Leaked owner vault is stronger; dishonest owner can attest control history. Rotation and negative archive cases |
+| Leaked shared archive plus its decryption key | Historical interval exposed | Exposed | Historical identities exposed | Historical roster exposed | Known | Historical event times | Full history size | Shared openings do not grant continuing MLS state. An owner vault is a separate stronger capability; rotation and negative archive cases |
+| Owner checkpoint/account signing secret alone | No decryption capability implied | No decryption capability implied | Can forge owner identity/proofs | Can forge attestations/admission | Known public bindings | No extra timing decryption | No extra size decryption | Can attest false control history and impersonate immutable owner authority. It cannot derive an independent archive wrapping key. In the synthetic fixture the founder deliberately reuses this scalar as its device/NIP-44 key: that reuse additionally exposes addressed NIP-44 packets and device signing, but is distinct from checkpoint signing itself |
 
 Owner membership controls are intentionally public to the sequencer/relay so
 transport admission can be checked without group keys. The salted definition ID

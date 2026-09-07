@@ -76,6 +76,7 @@
       "requiredCases": [
         "feasibility.node.archive-openings-and-closure",
         "feasibility.node.archive-negative-coverage",
+        "feasibility.node.archive-capacity-boundaries",
         "feasibility.node.fresh-device-and-all-device-loss",
         "feasibility.node.recovery-rotation-and-revocation",
         "feasibility.node.owner-admission-one-boundary",
@@ -97,6 +98,7 @@
       "requiredCases": [
         "feasibility.browser.archive-openings-and-closure",
         "feasibility.browser.archive-negative-coverage",
+        "feasibility.browser.archive-capacity-boundaries",
         "feasibility.browser.fresh-device-and-all-device-loss",
         "feasibility.browser.recovery-rotation-and-revocation",
         "feasibility.browser.owner-admission-one-boundary",
@@ -191,6 +193,12 @@
       "identityRequestsPerMinute": 60,
       "burst": 10,
       "instanceRequestsPerMinute": 300
+    },
+    "mls": {
+      "rfc": 9420,
+      "version": 1,
+      "name": "MLS 1.0",
+      "cipherSuite": 1
     }
   },
   "gatewayRuntime": {
@@ -205,5 +213,8 @@
       "lib/receiver.js": "4879edbf8e48d04d09783cf9c04b5e25f5a448247bb01279438ded2899747220",
       "lib/sender.js": "d0791d30c3defd44dcabbddb879a901c757993fea2c00a7ffea01d53b23b4b77"
     }
-  }
+  },
+  "pendingDecisions": [
+    "G2-LONG-HISTORY"
+  ]
 }

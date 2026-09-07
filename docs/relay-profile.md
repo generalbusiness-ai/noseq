@@ -102,7 +102,12 @@ pauses actual output queues, learns removal, verifies their cancellation and
 rejects old cursors, old closure reads, reconnect and re-AUTH. Caller-selected
 older data tips never lower the authorization frontier.
 
-G5-F06 reconstructs an intact JSON control file, preserving a known removal. A
+G5-F06 reconstructs an intact JSON control file, preserving both accepted
+removals and verified out-of-order control knowledge. The bounded signed pending
+buffer is persisted before a buffered reply; reconstruction verifies it and keeps
+reads disabled until its dependencies produce a contiguous verified prefix. Old
+cursors, closure reads and reconnected readers remain denied across that
+reconstruction. This is different from a removal that has never been seen. A
 separate **stale restore mode** starts read-disabled, requires an external
 owner-signed fresh-challenge high-water proof, and cannot enable reads until
 that prefix has been ingested. Losing the external authority link leaves it
@@ -140,10 +145,21 @@ new retention/publication and expose degraded replication. Each mirror's
 acknowledgement records the exact event/prefix identity and profile; an overall
 status must distinguish local durable ACK, each replica ACK, pending retry and
 complete retained prefix. Merely listing mirror URLs is not a replication result.
-P1c tests gateway refusal, exact backend retention/readback and a retained prefix
-but does not prove
-persistent disk retention, retry scheduling, independent failure domains,
-primary-loss recovery or authenticated replication. Those remain P5.
+P1c accounts the exact encoded bytes of every unique ordered entry, encrypted
+object and closure declaration in one 256 MiB retention quota. Exact retries do
+not incur another charge. Replacing a tip's closure index preserves the old signed
+declaration in the retained inventory and its byte charge. All three routes
+check the aggregate quota before native publication and verify actual readback.
+Intact reconstruction recomputes usage from that inventory, including older
+declarations. The control-file envelope allows three times the journal cap plus
+the bounded pending-event buffer and 1 MiB of overhead, checked before reading;
+it is distinct from the 16 MiB archive-export limit. The redundant JSON indexes
+are an isolated fixture representation, not a production storage layout.
+
+P1c tests gateway refusal, exact native retention/readback and a separately
+AUTHed replication child that exits. It does not prove crash-atomic accounting,
+fsync, physical disk retention, retry scheduling, independently operated
+replication/failure domains or primary-loss recovery. Those remain P5.
 
 A real gateway must apply one privacy decision to initial REQ, history pages,
 every live delivery and all alternate routes. COUNT can reveal instance/event
@@ -209,15 +225,17 @@ claim.
 These limits are explicit prototype choices from Plan 001, with two additional
 archive caps. Units matter: 1 KiB = 1024 bytes; NIP-11 `max_message_length` is
 bytes, while `max_content_length` is Unicode characters. Event-byte validation
-remains authoritative even when a character limit is advertised. The fixture
-advertises only NIPs 1, 11 and 42 for its proposed surface, and separately
-labels itself a conformance model; this is not actual relay metadata.
+remains authoritative even when a character limit is advertised. The actual local gateway
+serves NIP-11 metadata advertising only NIPs 1, 11 and 42 and labels its status
+as a development fixture. F02 reads that HTTP response. The separate pure
+policy-model metadata is not evidence of a deployed service or of the native
+backend's advertised configuration.
 
 | Resource | Cap | Executed enforcement / remaining owner |
 | --- | --- | --- |
 | Inner canonical action | 32 KiB | Before signing/encryption; actual maximum and +1 vectors |
 | Complete signed Nostr event | 128 KiB | Parse/envelope construction; real strfry sizes |
-| Complete WebSocket message | 131,200 bytes | Fixture framing and real coherent strfry profile; full gateway parser pending |
+| Complete WebSocket message | 131,200 bytes | Actual gateway maxPayload/parser and coherent native strfry profile; production ingress P4/P5 |
 | Tags | 16, at most 4 strings each, each string 256 UTF-8 bytes | Strict parser, exact profile tags narrower |
 | JSON depth | 32 | Before parse and canonical recursion |
 | Definition closure | 64 files, 512 KiB decoded total | Closure validator; actual application loading P3 |
@@ -225,9 +243,9 @@ labels itself a conformance model; this is not actual relay metadata.
 | Group | 16 devices in 8 accounts | Exact roster checks, 16-device actual Commit/Welcome |
 | KeyPackage/control | 8 KiB per encoded KeyPackage, 16 proposals, 16-device roster and 128 KiB whole event | Local proposal count/encoded size checked before Commit crypto; raw event bound before MLS decode; standalone admission upload remains P8 |
 | Shared/owner archive | 128 entries, 16 MiB canonical plaintext | Export capacity refusal; additional conservative P1c bound |
-| Local journal | 256 MiB per instance | Actual gateway accounting/refusal against real strfry; physical capacity P4/P5 |
+| Aggregate retained bytes | 256 MiB per instance | Ordered entries, objects and all retained closure declarations; exact-identity dedup and intact counter reconstruction. Physical capacity/crash accounting P4/P5 |
 | Replication outbox | 64 MiB | P4/P5 scheduling/accounting pending |
-| Connections | 32 per instance | P4/P5 runtime enforcement pending |
+| Connections | 32 per instance | Local gateway upgrade guard; production P4/P5 admission/accounting pending |
 | Subscriptions/filters | 4 subscriptions per connection, 4 filters per request | Actual gateway sockets validate all branches and subscriptions |
 | Historical page | 128 events and 1 MiB, whichever first | Actual fixed-tip socket queries and native byte readback |
 | Live queue | 128 events and 1 MiB | Actual gateway queue refusal; OS/network slow-reader stress remains P5 |
@@ -255,9 +273,9 @@ large closure pieces pause recovery; they never disappear from coverage claims.
 | G5-F03 | Internal owner admission before newcomer reads, original old journal without historic p tags, complete declared encrypted archive identities and actual G2 recovery verification |
 | G5-F04 | Removal during paused queued history/live, cutoff accounting, old cursor/closure denial, reconnect and re-AUTH |
 | G5-F05 | Separate replication process, named prefix 40 and unseen removal 41 exposure, later denial and newcomer grant |
-| G5-F06 | Intact file reconstruction, stale-restore fence and external high-water reconciliation, gaps, half-controls and observed fork halt |
+| G5-F06 | Intact accepted and out-of-order control-fence reconstruction, stale-restore external high-water reconciliation, gaps, half-controls and observed fork halt |
 | G5-F07 | 130 same-second entries over a 128-event cap, fixed-tip writes/dedup, real native middle-ID deletion, unavailable response and authenticated byte restore; closure holes |
-| G5-F08 | Unauthorized/foreign/protected writes, no tag stripping, subscription/filter/frame/queue limits, retention refusal without eviction |
+| G5-F08 | Unauthorized/foreign/protected writes, no tag stripping, subscription/filter/frame/queue limits, all-route aggregate retention refusal, uncharged retries, older-declaration accounting and reconstructed counters |
 
 The sockets use ws 8.21.0 and exact local Node/native dependencies. Every case
 retains raw sent/received frames, context/frontier notes, native config/source/

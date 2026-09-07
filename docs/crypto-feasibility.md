@@ -455,3 +455,12 @@ an explicitly authorized, separately reviewed gate-activation record/validator
 are required after the remaining cases and policy decisions; an author boolean
 or arbitrary report ID cannot activate this candidate. No P2–P9 implementation
 or production crypto adoption follows from P1c publication.
+
+P1c review identified two bounded gateway gaps: intact reconstruction could lose
+a learned out-of-order control fence, and encrypted objects/declarations bypassed
+aggregate retention accounting. The corrected fixtures preserve that fence,
+account every retained identity including older closure declarations, and
+reconstruct the counter. Dedicated archive max/+1 vectors also delimit the
+128-entry/16 MiB export capability. **G2-LONG-HISTORY** remains an open adoption
+decision for authenticated segment composition over larger admitted histories;
+no smaller instance lifetime or Plan 001 workload change has been selected.

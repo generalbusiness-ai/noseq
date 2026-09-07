@@ -1,14 +1,14 @@
 // Isolated G5 socket feasibility fixture. No production routing, persistence or deployment claim.
 import { strict as assert } from "node:assert";
 import { createServer } from "node:http";
-import { readFileSync, writeFileSync, renameSync } from "node:fs";
+import { readFileSync, writeFileSync, renameSync, statSync } from "node:fs";
 import WebSocket, { WebSocketServer } from "ws";
 import { Peer, type Frame } from "./gateway-native.ts";
 import { entry, publicTransition, checkMembers, type PublicState } from "./crypto.ts";
 import { authenticate, type Session } from "./policies.ts";
 import { canonical, clone, equal, eventBytes, fields, hex, hex32, integer, limits, parse, random, read, readGenesis, unb64, type Signed, type Context } from "./wire.ts";
 
-interface Stored { events: Signed[]; objects: Record<string, Signed>; closures: Record<string, Signed>; initial: PublicState; public: PublicState; fork: boolean }
+interface Stored { events: Signed[]; objects: Record<string, Signed>; closures: Record<string, Signed>; retained: Record<string, Signed>; pending: Signed[]; initial: PublicState; public: PublicState; fork: boolean }
 interface Filter { kinds: number[]; ids?: string[]; limit: number; "#h": string[]; "#i": string[]; "#d": string[]; noseq_tip?: string }
 interface Reader { socket: WebSocket; auth: Session; subscriptions: Map<string, Filter[]>; blocked: Set<string>; queue: { subscription: string; message: unknown[] }[]; queuedBytes: number; draining: boolean; operator: boolean }
 export class Gateway {
@@ -21,19 +21,37 @@ export class Gateway {
     fields(initial,["version","epoch","members"]); assert.equal(initial.version,0); assert.equal(initial.epoch,0); checkMembers(initial.members); assert.equal(initial.members.length,1);
     const proof=read(eventBytes(founder),"proof",ctx); assert.equal(proof.pubkey,ctx.owner); const binding=parse(proof.content); fields(binding,["type","device","suite","leaf"]); assert.equal(binding.type,"account-leaf"); assert.equal(binding.suite,1);
     equal(initial.members[0],{account:ctx.owner,device:binding.device,leaf:binding.leaf},"owner-signed founder binding");
-    this.data = { events: [], objects: {}, closures: {}, initial: clone(initial), public: clone(initial), fork: false }; this.restoredFence = restored;
+    this.data = { events: [], objects: {}, closures: {}, retained: {}, pending: [], initial: clone(initial), public: clone(initial), fork: false }; this.restoredFence = restored;
   }
   get tip(): string { return this.data.events.at(-1)?.id ?? this.ctx.genesis; }
   get readable(): boolean { return !this.restoredFence && !this.controlGap && !this.data.fork; }
   private mayRead(r: Reader): boolean { return this.readable && r.auth.authenticated.some(k => this.data.public.members.some(m => m.device === k)); }
   private mayWrite(r: Reader): boolean { return r.operator && r.auth.authenticated.some(k => k === this.ctx.sequencer || this.replicas.includes(k)); }
-  private persist(): void { writeFileSync(this.statePath + ".next", canonical(this.data)); renameSync(this.statePath + ".next", this.statePath); }
+  private persist(): void {
+    this.data.pending = [...this.buffer.values()].map(clone);
+    writeFileSync(this.statePath + ".next", canonical(this.data)); renameSync(this.statePath + ".next", this.statePath);
+  }
   loadIntact(): void {
-    const data = parse(readFileSync(this.statePath, "utf8"), limits.archive) as unknown as Stored; let state = clone(data.initial), previous = this.ctx.genesis;
+    // Each retained event occurs at most twice (inventory plus index), with bounded pending events and roster overhead.
+    const stateLimit = 3 * limits.journal + limits.pageEvents * limits.event + 1_048_576;
+    assert(statSync(this.statePath).size <= stateLimit, "gateway state envelope");
+    const data = parse(readFileSync(this.statePath, "utf8"), stateLimit) as unknown as Stored;
+    fields(data,["events","objects","closures","retained","pending","initial","public","fork"]);
+    assert(Array.isArray(data.events) && Array.isArray(data.pending)); assert.equal(typeof data.fork,"boolean");
+    let state = clone(data.initial), previous = this.ctx.genesis;
     equal(state, this.data.initial, "restored root roster");
     for (const [i, signed] of data.events.entries()) { const e = entry(signed, this.ctx); assert.equal(e.position, i + 1); assert.equal(e.previous, previous); state = publicTransition(this.ctx, state, e); previous = signed.id; }
-    equal(state, data.public, "restored authority mismatch"); this.data = data;
-    this.journalBytes = data.events.reduce((n, e) => n + Buffer.byteLength(eventBytes(e)), 0); // Intact-file reconstruction; no fsync/crash guarantee.
+    equal(state, data.public, "restored authority mismatch");
+    let total = 0;
+    for (const [id, signed] of Object.entries(data.retained)) {
+      assert.equal(id,signed.id); const kind = signed.kind === 8792 ? "order" : signed.kind === 8795 ? "chunk" : "proof";
+      read(eventBytes(signed),kind,this.ctx); total += Buffer.byteLength(eventBytes(signed)); assert(total <= limits.journal,"restored retention quota");
+    }
+    for (const signed of [...data.events,...Object.values(data.objects),...Object.values(data.closures)]) equal(data.retained[signed.id],signed,"missing retained inventory");
+    assert(data.pending.length <= limits.pageEvents); const pending = new Map<number,Signed>();
+    for (const signed of data.pending) { const e=entry(signed,this.ctx); assert(e.position > data.events.length && !pending.has(e.position),"invalid pending position"); pending.set(e.position,clone(signed)); }
+    this.data = data; this.buffer = pending; this.controlGap = [...pending.values()].some(e=>entry(e,this.ctx).admission !== null);
+    this.journalBytes = total; // Intact-file reconstruction; no fsync/crash guarantee.
   }
   metadata() { return { name: "Noseq isolated prefix gateway", supported_nips: [1, 11, 42], limitation: { max_message_length: limits.frame, max_subscriptions: limits.subscriptions, max_limit: limits.pageEvents, max_event_tags: limits.tags, max_content_length: limits.event, auth_required: true, restricted_writes: true }, noseq: { policy: "highest-verified-retained-prefix", status: "development-fixture", normal_history: true, public_count: false, public_negentropy: false } }; }
   async start(backendUrl: string): Promise<void> {
@@ -54,6 +72,14 @@ export class Gateway {
     }
   }
   private async backendPut(e: Signed): Promise<void> { assert(this.backend); this.backend.send(["EVENT", e]); const ok = await this.backend.take(m => m[0] === "OK" && m[1] === e.id); assert.equal(ok[2], true, "backend refused retention"); }
+  private async retain(e: Signed): Promise<void> {
+    const previous = this.data.retained[e.id]; if (previous) equal(previous,e,"retained identity changed");
+    const added = previous ? 0 : Buffer.byteLength(eventBytes(e));
+    assert(this.journalBytes + added <= limits.journal,"retention full; no eviction");
+    // Commands run on one serial tail: reserve/check before native retention; retries repair missing bytes without a second charge.
+    await this.backendPut(e); equal(await this.backendGet(e.id),e,"backend retention/readback changed");
+    if (!previous) { this.data.retained[e.id] = clone(e); this.journalBytes += added; }
+  }
   private async backendGet(id: string): Promise<Signed> {
     assert(this.backend); const sub = "private-" + ++this.backendRequest; this.backend.send(["REQ", sub, { ids: [id], limit: 1 }]);
     await this.backend.take(m => m[0] === "EOSE" && m[1] === sub); const found = this.backend.messages.find(m => m[0] === "EVENT" && m[1] === sub); this.backend.messages = this.backend.messages.filter(m => m[1] !== sub); this.backend.send(["CLOSE", sub]);
@@ -61,15 +87,14 @@ export class Gateway {
   }
   private async ingest(signed: Signed): Promise<void> {
     const e = entry(signed, this.ctx); const previous = this.data.events[e.position - 1];
-    if (previous) { if (previous.id !== signed.id) { this.data.fork = true; this.persist(); this.cancelUnauthorized(); throw new Error("observed fork"); } await this.backendPut(signed); equal(await this.backendGet(signed.id), signed, "private restore readback"); return; }
+    if (previous) { if (previous.id !== signed.id) { this.data.fork = true; this.persist(); this.cancelUnauthorized(); throw new Error("observed fork"); } await this.retain(signed); this.persist(); return; }
     if (this.buffer.has(e.position) && this.buffer.get(e.position)!.id !== signed.id) { this.data.fork = true; this.persist(); this.cancelUnauthorized(); throw new Error("observed buffered fork"); }
-    if (e.position > this.data.events.length + 1) { assert(this.buffer.size < limits.pageEvents, "gap buffer full"); this.buffer.set(e.position, signed); if (e.admission) this.controlGap = true; this.cancelUnauthorized(); return; }
+    if (e.position > this.data.events.length + 1) { assert(this.buffer.has(e.position) || this.buffer.size < limits.pageEvents, "gap buffer full"); this.buffer.set(e.position, clone(signed)); if (e.admission) this.controlGap = true; this.persist(); this.cancelUnauthorized(); return; }
     assert.equal(e.previous, this.tip, "predecessor mismatch"); const next = publicTransition(this.ctx, this.data.public, e);
-    assert(this.journalBytes + Buffer.byteLength(eventBytes(signed)) <= limits.journal, "retention full; no eviction"); await this.backendPut(signed);
-    const retained = await this.backendGet(signed.id); equal(retained, signed, "backend readback changed"); this.data.events.push(clone(signed)); this.data.public = clone(next); this.journalBytes += Buffer.byteLength(eventBytes(signed)); this.persist();
+    await this.retain(signed); this.buffer.delete(e.position); this.data.events.push(clone(signed)); this.data.public = clone(next); this.persist();
     this.cancelUnauthorized(); // This is the authorization cutoff, before any corresponding live queue item.
     for (const r of this.readers) for (const [sub, f] of r.subscriptions) if (f.some(filter => this.matches(signed, filter) && !filter.noseq_tip)) this.enqueue(r, sub, ["EVENT", sub, signed]);
-    const buffered = this.buffer.get(this.data.events.length + 1); if (buffered) { this.buffer.delete(this.data.events.length + 1); await this.ingest(buffered); }
+    const buffered = this.buffer.get(this.data.events.length + 1); if (buffered) await this.ingest(buffered);
     this.controlGap = [...this.buffer.values()].some(e => entry(e, this.ctx).admission !== null); this.cancelUnauthorized();
   }
   private filter(x: unknown): Filter {
@@ -113,10 +138,10 @@ export class Gateway {
       if (m[0] === "EVENT") { assert.equal(m.length, 2); const e = m[1] as Signed; try { await this.ingest(e); r.socket.send(canonical(["OK", e.id, !this.buffer.has(entry(e, this.ctx).position), this.buffer.has(entry(e, this.ctx).position) ? "blocked: buffered dependency; not retained" : "retained"])); } catch (error) { r.socket.send(canonical(["OK", e.id, false, String(error)])); } return; }
       if (m[0] === "OBJECT") { assert.equal(m.length, 2); const e = read(eventBytes(m[1] as Signed), "chunk", this.ctx); assert(this.data.public.members.some(v => v.device === e.pubkey && v.account === this.ctx.owner), "object owner device");
         const wrapper=parse(e.content); fields(wrapper,["format","context","generation","nonce","keyId","checkpoint","bytes"]);assert.equal(wrapper.format,"noseq/recovery-aes256gcm@1");equal(wrapper.context,this.ctx,"object context");integer(wrapper.generation);assert((wrapper.generation as number)>0);hex32(wrapper.checkpoint);hex32(wrapper.keyId);assert.equal(unb64(wrapper.nonce,12).length,12);assert(unb64(wrapper.bytes).length>=16);
-        await this.backendPut(e); this.data.objects[e.id] = e; this.persist(); r.socket.send(canonical(["OK", e.id, true, "retained object"])); return; }
+        await this.retain(e); this.data.objects[e.id] = e; this.persist(); r.socket.send(canonical(["OK", e.id, true, "retained object"])); return; }
       if (m[0] === "CLOSURE") { assert.equal(m.length, 2); const e = read(eventBytes(m[1] as Signed), "proof", this.ctx); assert.equal(e.pubkey, this.ctx.owner); const c = parse(e.content); fields(c, ["type", "tip", "checkpoint", "ids"]); assert.equal(c.type, "retention-closure"); hex32(c.tip); assert(Array.isArray(c.ids) && c.ids.length > 0 && c.ids.length <= limits.pageEvents); for (const id of c.ids) hex32(id); assert(this.data.events.some(v => v.id === c.tip), "unknown closure tip");assert.equal(new Set(c.ids).size,c.ids.length,"duplicate closure IDs");
         const checkpoint=read(eventBytes(c.checkpoint as Signed),"archive",this.ctx);assert.equal(checkpoint.pubkey,this.ctx.owner);const coverage=parse(checkpoint.content);fields(coverage,["type","bodyHash","vaultHash","count","tip"]);assert.equal(coverage.type,"owner-attested-full-prefix@1");hex32(coverage.bodyHash);hex32(coverage.vaultHash);assert.equal(coverage.tip,c.tip);assert.equal(coverage.count,this.data.events.findIndex(v=>v.id===c.tip)+1);
-         await this.backendPut(e); this.data.closures[c.tip] = e; this.persist(); r.socket.send(canonical(["OK", e.id, true, "closure declaration retained; completeness checked on read"])); return; }
+         await this.retain(e); this.data.closures[c.tip] = e; this.persist(); r.socket.send(canonical(["OK", e.id, true, "closure declaration retained; completeness checked on read"])); return; }
       if (m[0] === "RECONCILE") { const e = read(eventBytes(m[1] as Signed), "proof", this.ctx); assert.equal(e.pubkey, this.ctx.owner); const c = parse(e.content); fields(c, ["type", "challenge", "position", "tip"]); assert.equal(c.type, "trusted-high-water"); assert.equal(c.challenge, this.reconcileChallenge); integer(c.position); hex32(c.tip); assert.equal(this.data.events[(c.position as number) - 1]?.id ?? this.ctx.genesis, c.tip, "restore missing trusted high-water prefix"); this.restoredFence = false; this.reconcileChallenge = hex(random()); r.socket.send(canonical(["OK", e.id, true, "reconciled external authority"])); return; }
       throw new Error("unsupported private command");
     }
