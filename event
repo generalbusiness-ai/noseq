@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:02bd9477ba84543b013c7364247fe62ca4969819","text":"Merge retired a covered predecessor; the successor is at fixtures/crypto/protocol/profile.json."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:058f2f20c80ba3179fa9150eb16329d98b19656a","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/archive.ts."}
