@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:040992c9338b6d2d89c9af45731e02706bff7a12","text":"Merge retired a covered predecessor; the successor is at scripts/decision-verifier-build.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0c68c187b492b771507df5e3afd4230bd8b4ba03","text":"Merge retired a covered predecessor; the successor is at tests/protocol-closure/browser.test.ts."}
