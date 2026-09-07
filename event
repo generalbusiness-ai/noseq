@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5d6e2aa7d8c705a873376dcd8f21d1b5d2cee2c7","text":"Merge retired a covered predecessor; the successor is at tests/ordered-mls/browser.test.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:6781de4f7dbbf183ee43e91a714b23c41ee9ea0f","text":"Merge retired a covered predecessor; the successor is at docs/crypto-feasibility.md."}
