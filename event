@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:a26583d07f0e168bbb4ee38a73ca857137f40f7f","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/browser.test.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:a789dc8aa17ed4d5190d763266c96c1ffee3dc14","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/node.test.ts."}
