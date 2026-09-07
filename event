@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:61b19c44ef44cce65a5746c1fdf4a42654307023","text":"Merge retired a covered predecessor; the successor is at docs/protocol-v0.md."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:64449e5de4a1e1ba37c066eff12204177c47f3cb","text":"Merge retired a covered predecessor; the successor is at tsconfig.protocol-feasibility.json."}
