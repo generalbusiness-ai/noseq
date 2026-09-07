@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tsconfig.segmented-recovery.json","body":{"commit":"499dc13e3ef05f8a30f844df225dc17ce4162297","path":"tsconfig.segmented-recovery.json"}}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:00d18d1ef659ed69ced7e1d8a94cb3af283a9017","text":"Merge retired a covered predecessor; the successor is at docs/toolchain.md."}
