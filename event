@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:cd04ceef7eb9c4f042c736e903aab6a2f8897ff5","text":"Merge retired a covered predecessor; the successor is at tests/ordered-mls/node.test.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:d4d70aaaa510bfc5b6bd22ae35ed2b74c081aba4","text":"Merge retired a covered predecessor; the successor is at tests/ordered-mls/browser.ts."}
