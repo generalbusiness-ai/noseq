@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:dfb1d44d525d1103d7446f24fda09a4a481c0e09","text":"Merge retired a covered predecessor; the successor is at package.json."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:e9d59480c110ab0bd73d3b0c32a552815dcc98c5","text":"Merge retired a covered predecessor; the successor is at scripts/decision-validator.ts."}
