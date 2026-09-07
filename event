@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:090f4f217332b15cbe8452136a643b635398e59e","text":"Merge retired a covered predecessor; the successor is at fixtures/crypto/ordered-profile.json."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0d75264817cb32b9c2751a215b987bbca9f40d3c","text":"Merge retired a covered predecessor; the successor is at ordered-mls.vite.config.ts."}
