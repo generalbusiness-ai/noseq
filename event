@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:bb8ab8573858fedb8d821569794e72b930a161fe","text":"Merge retired a covered predecessor; the successor is at docs/protocol-v0.md."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c2912c04c6fd661af709fbcc02deeb04649a8e0c","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/gateway-native.ts."}
