@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:d9f1862801fa559d025b5519f01f3df6b4e6637c","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/gateway.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:d9fab08c3852f768a5356fec5f0c472ea812aa88","text":"Merge retired a covered predecessor; the successor is at tests/segmented-recovery/store-node.ts."}
