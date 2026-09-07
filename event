@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:f575ecf6e4a7fa618953f404708984810cd599f6","text":"Merge retired a covered predecessor; the successor is at segmented-gateway.config.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:f678994da85107832643f314fc43f71826b1a8d3","text":"Merge retired a covered predecessor; the successor is at tests/segmented-recovery/types.ts."}
