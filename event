@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:b47314ae3cb420a3fca6f68c9fee86d137daabd4","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/opening.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c5ebe9fdbe36232830bf4f3fee80f560630933cb","text":"Merge retired a covered predecessor; the successor is at protocol-gateway.config.ts."}
