@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:74d2aa698192f34835233b366c700a6b81a1dae6","text":"Merge retired a covered predecessor; the successor is at scripts/protocol-relay-probe.mjs."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:7e29820983eb6039ea79019addb36b888c125cd2","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/crypto.ts."}
