@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:2ac14d12d925cb8f9d28fc25baadb996a454050a","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/gateway-native.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:2c570b928146add6f188612000bf7673f37c9784","text":"Merge retired a covered predecessor; the successor is at tests/segmented-recovery/eligibility.ts."}
