@@ -323,3 +323,12 @@ The coordinator independently checked its raw evidence and a fresh origin clone
 and signed sequence in audit `6443fb0213ed72d0443526bcc909ed841b29b110`.
 That Linux baseline result does not run the macOS native dependency or establish
 any P1d crypto/recovery result.
+
+
+The first complete 115-test candidate run (`07b3e548...` at `7c6183f...`) passed
+its runtime assertions. Subsequent CLI challenges (`2bf05465...`) found that its
+evidence verifier accepted omitted command provenance and a rehashed command
+that skipped typechecking. The corrected verifier requires all six exact command
+records/logs and their full argument contracts. The original positive run and
+both accepted malformed probes remain retained; a fresh corrected-head full run
+and repeated rejection checks are required before review.

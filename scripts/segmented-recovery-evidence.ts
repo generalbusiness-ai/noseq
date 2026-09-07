@@ -163,14 +163,20 @@ export function validateSegmented(
   assert.equal(e.prerequisite.cases, 102);
   assert.match(
     e.prerequisite.path,
-    /^artifacts\/protocol-feasibility\/runs\/[0-9a-f-]{36}\/evidence.json$/,
+    /^artifacts\/protocol-feasibility\/runs\/[0-9a-f-]{36}\/evidence\.json$/,
   );
   assert.match(e.prerequisite.sha256, /^[0-9a-f]{64}$/);
   assert.deepEqual(Object.keys(e.observations).sort(), observationFiles().sort());
   for (const h of Object.values(e.observations)) assert.match(h, /^[0-9a-f]{64}$/);
   assert("index.html" in e.browserBundle);
   assert("trace.json" in e.native);
-  assert(Object.keys(e.commands).length >= 8);
+  assert.deepEqual(
+    Object.keys(e.commands).sort(),
+    Array.from({ length: 6 }, (_, i) => [`${i + 1}.log`, `${i + 1}.command.json`])
+      .flat()
+      .sort(),
+    "exact required command provenance",
+  );
 }
 const readBounded = (path: string, maximum = 8_388_608): any => {
   assert(statSync(path).size <= maximum, "oversized evidence input");
@@ -299,6 +305,57 @@ export function verifySegmentedFiles(e: SegmentedEvidence, directory: string) {
     assert.equal(sha256File(join(directory, name)), digest);
     if (name.endsWith("command.json")) {
       const command = readBounded(join(directory, name));
+      fields(command, ["command", "args", "cwd", "exitCode", "signal", "error"]);
+      assert(typeof command.command === "string" && command.command.endsWith("/node"));
+      assert(typeof command.cwd === "string" && command.cwd.startsWith("/"));
+      const step = Number(name.split(".")[0]);
+      const output = `--outputFile=${command.cwd}/artifacts/segmented-recovery/runs/${e.runId}/${step === 4 ? "node" : "gateway"}.json`;
+      const expected: Record<number, string[]> = {
+        1: ["scripts/protocol-feasibility.ts"],
+        2: [
+          "node_modules/typescript/bin/tsc",
+          "--noEmit",
+          "-p",
+          "tsconfig.segmented-recovery.json",
+        ],
+        3: [
+          "node_modules/vite/bin/vite.js",
+          "build",
+          "--config",
+          "segmented-recovery.vite.config.ts",
+          "--configLoader",
+          "native",
+        ],
+        4: [
+          "node_modules/vitest/vitest.mjs",
+          "run",
+          "--config",
+          "segmented-recovery.config.ts",
+          "--configLoader",
+          "native",
+          "--reporter=default",
+          "--reporter=json",
+          output,
+        ],
+        5: [
+          "node_modules/@playwright/test/cli.js",
+          "test",
+          "--config",
+          "segmented-recovery.playwright.config.ts",
+        ],
+        6: [
+          "node_modules/vitest/vitest.mjs",
+          "run",
+          "--config",
+          "segmented-gateway.config.ts",
+          "--configLoader",
+          "native",
+          "--reporter=default",
+          "--reporter=json",
+          output,
+        ],
+      };
+      assert.deepEqual(command.args, expected[step], "actual required command contract");
       assert.equal(command.exitCode, 0);
       assert.equal(command.signal, null);
       assert.equal(command.error, null);
