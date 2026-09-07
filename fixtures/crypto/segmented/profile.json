@@ -1,0 +1,13 @@
+{
+  "schema": "noseq/segmented-feasibility-profile@1",
+  "domain": "noseq/segmented-recovery@2",
+  "ordering": "noseq/protocol-candidate@1",
+  "status": "proposed-profile-only; all full gates unpassed",
+  "base": "1d4d775b342a34a32ca1690c461071b7010a9282",
+  "kinds": {"root":8800,"manifest":8801,"chunk":8802,"checkpoint":8803,"locator":8804,"delivery":8805,"reservation":8806},
+  "bounds": {"entries":65536,"segments":65536,"segmentEntries":128,"segmentBytes":16777216,"grantBytes":16777216,"vaultBytes":16777216,"descriptorIndexBytes":33554432,"logicalIndexBytes":16777216,"reservationIndexBytes":33554432,"reservationEntries":262144,"journalBytes":268435456,"outboxBytes":67108864,"eventBytes":131072,"frameBytes":131200,"chunkBytes":16384,"pageEvents":128,"pageBytes":1048576},
+  "prerequisite": {"command":"npm run probe:protocol-feasibility","requiredTests":102,"gates":"UNPASSED"},
+  "nips": {"commit":"c3fd9af17939316bf6d0d83a5759100f8b0a1bdb","registry":"README.md","checkedKindsAbsent":[8800,8801,8802,8803,8804,8805,8806]},
+  "contracts": ["G2-S01","G2-S02","G2-S03","G2-S04","G2-S05","G2-S06"],
+  "closure": "schemas frozen for execution; independent review and adoption pending"
+}
