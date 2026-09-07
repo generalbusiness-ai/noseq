@@ -1,0 +1,137 @@
+{
+  "scope": "Independent publication candidate preparation only. No genuine D1-D9 adoption, operational commission/result or P2-P9 authorization.",
+  "worktree": "/Users/hughpyle/play/noseq-worktrees/protocol-gates",
+  "source": {
+    "base": "1c158d8044cd53ceed5cd191f1f423613c3c571e",
+    "commit": "63401d7bc9604897632b5924107053952894b4b5",
+    "tree": "73c9e8a9fc74690a4f1adbb095e2e69499e4bd50"
+  },
+  "changedPaths": 23,
+  "runtimeCases": 119,
+  "inheritedAuthorityGroups": 10,
+  "inheritedAuthoritySubchecks": 71,
+  "gateGroups": 10,
+  "gateSubchecks": 61,
+  "readinessSchema": "noseq/protocol-gate-readiness@2",
+  "records": {
+    "readiness": {
+      "path": "artifacts/protocol-gates/runs/c90e47ce-8a41-4ad3-8c81-56574d2226ee/evidence.json",
+      "sha256": "43e016d9fd7d9a766c6a1e5be77249fe02807d2d2e8b08e3650c68f7992a483b",
+      "bytes": 27880
+    },
+    "cacheFree": {
+      "path": "artifacts/protocol-gates/cache-free/4f8a9c33-b811-4ad2-9540-b70c69a56e05/result.json",
+      "sha256": "83343d902d7fa8a98eb7f21ba0bf5ca6819cfc30d286277488a46a10ed767199",
+      "bytes": 1125
+    },
+    "readinessCLI": {
+      "path": "artifacts/protocol-gates/cli-challenges/34894a46-56b0-4aef-941b-f7e6dec1fb88/results.json",
+      "sha256": "91b9fabf007e992830eb7217f8d988e09a5b8eefc2f1aad728408be532af339a",
+      "bytes": 67278
+    },
+    "closureCLI": {
+      "path": "artifacts/protocol-closure/cli-challenges/e2d5ec00-e79e-4a31-a200-d158cdb93cd7/results.json",
+      "sha256": "ed8d4f2adc94cfeffc6250bae61613cb5904c3c24fda7f1ac65b977643b8e0bb",
+      "bytes": 19366
+    },
+    "detached": {
+      "path": "artifacts/protocol-gates/detached-evidence/01e0fbbb-4b2a-42f1-982b-da29a7fc25f3/result.json",
+      "sha256": "ab489aa59a51528a3fc53d7a1aa79ba47b582dd25a94aeb5b024066f3c0b37fa",
+      "bytes": 600
+    },
+    "envelope": {
+      "path": "artifacts/protocol-gates/final-envelope/d8f2d2e3-dd51-4816-89be-ee102c31ab71/result.json",
+      "sha256": "e7da6e4fc94b6e723a1e632b955160ffb38dbf3d55b7bc6371b6f6c1ac9599ed",
+      "bytes": 3288
+    },
+    "metadataFailure": {
+      "path": "artifacts/protocol-gates/evidence-capacity/e29ebc03-b164-4308-bacb-6922dcba34c1/result.json",
+      "sha256": "030e0eab1236fd51b144b431d24342976ed753a075252d5bb85ab536d2fbe469",
+      "bytes": 706
+    },
+    "manifestParser": {
+      "path": "artifacts/protocol-gates/manifest-parser/ac0eff60-a10c-4628-a9fc-2b2aa15bbfda/result.json",
+      "sha256": "87783e2ffc97e2c9dc82a77d7be6c61017784911840bc15c624270cb8ba841e1",
+      "bytes": 1275
+    },
+    "readinessCLIDriver": {
+      "path": "artifacts/protocol-gates/cli-challenges/final-challenge.py",
+      "sha256": "e3198f74de7a3f7724623f430ae7a62154ec4beabe30b638d66c5b9c0b76feca",
+      "bytes": 8703
+    },
+    "detachedDriver": {
+      "path": "artifacts/protocol-gates/cli-challenges/detached-readiness.mjs",
+      "sha256": "621c2b65b955fe45e802303fbc6a99dd415b42ddb385a7a657f946a0e0b2f352",
+      "bytes": 2526
+    },
+    "envelopeDriver": {
+      "path": "artifacts/protocol-gates/cli-challenges/final-envelope.mjs",
+      "sha256": "271728cbbf5933a98f85c5b0365676f0dca4db848697606af1d9fd2659abd074",
+      "bytes": 3746
+    }
+  },
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "exit": 0,
+      "start": "2026-09-07T10:39:52.875990+00:00",
+      "end": "2026-09-07T10:39:55.676223+00:00",
+      "log": "artifacts/protocol-gates/outer/5c57e32c-48a2-49de-8941-6a0f0f83bed8/0.log"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exit": 0,
+      "start": "2026-09-07T10:39:55.676483+00:00",
+      "end": "2026-09-07T10:40:00.811380+00:00",
+      "log": "artifacts/protocol-gates/outer/5c57e32c-48a2-49de-8941-6a0f0f83bed8/1.log"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "start": "2026-09-07T10:40:00.811658+00:00",
+      "end": "2026-09-07T10:40:02.165131+00:00",
+      "log": "artifacts/protocol-gates/outer/5c57e32c-48a2-49de-8941-6a0f0f83bed8/2.log"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "probe:protocol-gate-readiness"
+      ],
+      "exit": 0,
+      "start": "2026-09-07T10:40:02.165460+00:00",
+      "end": "2026-09-07T10:51:09.600965+00:00",
+      "log": "artifacts/protocol-gates/outer/5c57e32c-48a2-49de-8941-6a0f0f83bed8/3.log"
+    }
+  ],
+  "verifier": {
+    "binary": "/Users/hughpyle/play/noseq-worktrees/protocol-closure/artifacts/protocol-closure/gitseq/bin/gs",
+    "source": "/Users/hughpyle/play/noseq-worktrees/protocol-closure/artifacts/protocol-closure/gitseq/source",
+    "sourceCommit": "d630554a7ba7d99c5f95eb77e1dfa7fd1f41637a",
+    "binarySha256": "c2b0ca9c37993e1a3e3e4df809eebd8a07f3af4a4990f9873ba00781c4c28d35",
+    "originalBuildRecordSha256": "a0f6c5ba50fcca4e6bc19a50d1b01fccc6f0e558fb16c9112a814bc1e8d90c3b",
+    "cache": "verified exact clean source/binary; no rebuild"
+  },
+  "nativeRoot": "/Users/hughpyle/Documents/Codex/2026-09-06/the-atseq-project-is-progressing-well/work/noseq-strfry-native",
+  "archivedP1d": "/Users/hughpyle/play/noseq-worktrees/segmented-recovery",
+  "realRepo": "/Users/hughpyle/play/noseq",
+  "gitseqBuild": "/Users/hughpyle/play/noseq-worktrees/protocol-closure/artifacts/protocol-closure/gitseq",
+  "boundaries": [
+    "Full detached evidence closure:12657 files/138353910 bytes.",
+    "Readiness metadata27880 bytes; raw manifest8343 files; final compact export486 bytes.",
+    "Current real signed F_pre1081 structurally verified and both public commands refused missing genuine adoption; actual generated diagnostic positives emit gates:null.",
+    "Hosted CI for this candidate is unrun; root publication follows actual independent approval/guarded landing.",
+    "Historical failed/stopped/earlier-source evidence is preserved and is not final selection E."
+  ]
+}
