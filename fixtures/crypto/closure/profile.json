@@ -3,7 +3,7 @@
   "status": "proposed; no real decisions adopted; all full gates unpassed",
   "ordering": "noseq/protocol-candidate@1",
   "recovery": "noseq/segmented-recovery@2",
-  "base": "499dc13e3ef05f8a30f844df225dc17ce4162297",
+  "base": "dac6e8a76a95b730fea6b7781a4c73047a6293d5",
   "inputProfiles": {
     "fixtures/harness/profile.json": "d981ff9b4351011873c16a3e3303590a7b21f953c01d273ed1a081ae623a3529",
     "fixtures/crypto/preflight-profile.json": "a3616665f693c81cb134c2d7cab8d17cf135982175715171bf68799a79c11258",
@@ -112,5 +112,345 @@
       "unpackedBytes": 5212874
     },
     "fullGates": "always refuse; diagnostic authority validity is not activation"
+  },
+  "gates": {
+    "G1": "unpassed",
+    "G2": "unpassed",
+    "G3": "unpassed",
+    "G4": "unpassed",
+    "G5": "unpassed"
+  },
+  "files": [
+    "decision-authority.config.ts",
+    "docs/protocol-adoption.md",
+    "docs/toolchain.md",
+    "fixtures/crypto/closure/gitseq-build.json",
+    "package.json",
+    "protocol-closure.config.ts",
+    "protocol-closure.playwright.config.ts",
+    "protocol-closure.vite.config.ts",
+    "scripts/decision-evidence.ts",
+    "scripts/decision-io.ts",
+    "scripts/decision-public-evidence.ts",
+    "scripts/decision-types.ts",
+    "scripts/decision-validator.ts",
+    "scripts/decision-verifier-build.ts",
+    "scripts/decision-verify.ts",
+    "scripts/protocol-closure-evidence.ts",
+    "scripts/protocol-closure.ts",
+    "scripts/protocol-gates.ts",
+    "tests/protocol-closure/authority-capacity.ts",
+    "tests/protocol-closure/authority-challenges.ts",
+    "tests/protocol-closure/authority-fixture.ts",
+    "tests/protocol-closure/authority.test.ts",
+    "tests/protocol-closure/browser.test.ts",
+    "tests/protocol-closure/browser.ts",
+    "tests/protocol-closure/churn.ts",
+    "tests/protocol-closure/fixture.ts",
+    "tests/protocol-closure/index.html",
+    "tests/protocol-closure/node.test.ts",
+    "tests/protocol-closure/reconstruction.ts",
+    "tests/protocol-closure/staged.ts",
+    "tests/protocol-closure/types.ts",
+    "tests/segmented-recovery/client.ts",
+    "tsconfig.protocol-closure.json"
+  ],
+  "authorityChecks": {
+    "authority.valid-independent-order": [
+      {
+        "label": "valid",
+        "expected": "accepted"
+      },
+      {
+        "label": "rotation",
+        "expected": "accepted"
+      }
+    ],
+    "authority.signature-and-git-integrity": [
+      {
+        "label": "signature",
+        "expected": "signature"
+      },
+      {
+        "label": "payload",
+        "expected": "signature"
+      },
+      {
+        "label": "pack",
+        "expected": "pack checksum"
+      },
+      {
+        "label": "attachment",
+        "expected": "exact D1-D9 acknowledgements"
+      }
+    ],
+    "authority.actor-and-authority": [
+      {
+        "label": "root",
+        "expected": "current principal/role policy"
+      },
+      {
+        "label": "reviewer",
+        "expected": "current principal/role policy"
+      },
+      {
+        "label": "guarded-self-review",
+        "expected": "reviewer"
+      },
+      {
+        "label": "borrowed",
+        "expected": "synthetic fixture cannot borrow real principals"
+      },
+      {
+        "label": "genesis",
+        "expected": "AssertionError"
+      },
+      {
+        "label": "ineffective",
+        "expected": "ineffective/missing signed act"
+      }
+    ],
+    "authority.decision-chain-bindings": [
+      {
+        "label": "missing",
+        "expected": "unknown or missing fields"
+      },
+      {
+        "label": "missing",
+        "expected": "unknown or missing fields"
+      },
+      {
+        "label": "missing",
+        "expected": "unknown or missing fields"
+      },
+      {
+        "label": "missing",
+        "expected": "unknown or missing fields"
+      },
+      {
+        "label": "missing",
+        "expected": "unknown or missing fields"
+      },
+      {
+        "label": "missing",
+        "expected": "unknown or missing fields"
+      },
+      {
+        "label": "basis",
+        "expected": "missing causal basis"
+      },
+      {
+        "label": "order",
+        "expected": "strict D AD Q P R AR order"
+      },
+      {
+        "label": "replacement",
+        "expected": "accepted"
+      }
+    ],
+    "authority.review-and-ratification": [
+      {
+        "label": "changed",
+        "expected": "approved"
+      },
+      {
+        "label": "publication",
+        "expected": "publication-only review is insufficient"
+      },
+      {
+        "label": "manifest",
+        "expected": "AssertionError"
+      },
+      {
+        "label": "unknown",
+        "expected": "unknown or missing fields"
+      },
+      {
+        "label": "acknowledgement",
+        "expected": "independent exact review binding: decisions"
+      }
+    ],
+    "authority.source-profile-evidence": [
+      {
+        "label": "source",
+        "expected": "exact source tree"
+      },
+      {
+        "label": "profile",
+        "expected": "trusted exact decision expectation: selection"
+      },
+      {
+        "label": "cases",
+        "expected": "trusted exact decision expectation: requiredCases"
+      },
+      {
+        "label": "paths",
+        "expected": "AssertionError"
+      },
+      {
+        "label": "missing",
+        "expected": "exhaustive exported file inventory"
+      },
+      {
+        "label": "corrupt",
+        "expected": "referenced raw bytes changed"
+      },
+      {
+        "label": "rehashed",
+        "expected": "Vitest numFailedTests must be zero"
+      },
+      {
+        "label": "old-contract",
+        "expected": "p1e-closure"
+      },
+      {
+        "label": "archived-vs-current-source",
+        "expected": "evidence source binding"
+      },
+      {
+        "label": "archived-vs-current-cases",
+        "expected": "exhaustive required-case contract"
+      },
+      {
+        "label": "archived-vs-current-profile",
+        "expected": "externally expected evidence context"
+      }
+    ],
+    "authority.retirement-and-selection": [
+      {
+        "label": "retired",
+        "expected": "retired/missing/superseded-world statement"
+      },
+      {
+        "label": "retired",
+        "expected": "named ratification does not survive at F"
+      },
+      {
+        "label": "retired",
+        "expected": "retired/missing/superseded-world statement"
+      },
+      {
+        "label": "retired",
+        "expected": "named ratification does not survive at F"
+      },
+      {
+        "label": "conflict",
+        "expected": "conflicting active protocol selections"
+      },
+      {
+        "label": "ordinary",
+        "expected": "accepted"
+      },
+      {
+        "label": "artifact",
+        "expected": "retired/missing/superseded-world statement"
+      },
+      {
+        "label": "world",
+        "expected": "retired/missing/superseded-world statement"
+      }
+    ],
+    "authority.frontier-and-history": [
+      {
+        "label": "before-revocation",
+        "expected": "accepted"
+      },
+      {
+        "label": "minimum-includes-revocation",
+        "expected": "frontier depth bound/minimum"
+      },
+      {
+        "label": "revoked-current",
+        "expected": "retired/missing/superseded-world statement"
+      },
+      {
+        "label": "sibling",
+        "expected": "git failed"
+      },
+      {
+        "label": "incomplete",
+        "expected": "exact source and sequence refs required"
+      },
+      {
+        "label": "missing-rotation",
+        "expected": "exact source and sequence refs required"
+      }
+    ],
+    "authority.paths-and-resources": [
+      {
+        "label": "duplicate",
+        "expected": "duplicate JSON field"
+      },
+      {
+        "label": "unknown",
+        "expected": "unknown or missing fields"
+      },
+      {
+        "label": "path",
+        "expected": "unsafe relative path"
+      },
+      {
+        "label": "symlink",
+        "expected": "symlink refused"
+      },
+      {
+        "label": "embedded",
+        "expected": "bundle-supplied policy refused"
+      },
+      {
+        "label": "bytes",
+        "expected": "file type/byte capacity"
+      },
+      {
+        "label": "manifest",
+        "expected": "file type/byte capacity"
+      },
+      {
+        "label": "raw",
+        "expected": "file type/byte capacity"
+      },
+      {
+        "label": "depth",
+        "expected": "frontier depth bound/minimum"
+      },
+      {
+        "label": "object-count-plus-one",
+        "expected": "Git object count capacity"
+      },
+      {
+        "label": "object-bytes-plus-one",
+        "expected": "object type/byte capacity"
+      },
+      {
+        "label": "unpacked-bytes-plus-one",
+        "expected": "unpacked Git capacity"
+      },
+      {
+        "label": "count",
+        "expected": "file count capacity"
+      },
+      {
+        "label": "aggregate",
+        "expected": "aggregate file capacity"
+      },
+      {
+        "label": "length",
+        "expected": "path length/type"
+      },
+      {
+        "label": "nesting",
+        "expected": "JSON nesting capacity"
+      },
+      {
+        "label": "escaped",
+        "expected": "duplicate JSON field"
+      }
+    ],
+    "authority.real-public-missing-adoption": [
+      {
+        "label": "real",
+        "expected": "MISSING_GENUINE_ADOPTION"
+      }
+    ]
   }
 }

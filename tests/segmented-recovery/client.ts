@@ -37,6 +37,7 @@ import {
 import type { RecordCore } from "./types.ts";
 export class StreamClient extends Client {
   observed = new Map<number, string>();
+  pendingAdmission: Signed | null = null;
   constructor(
     ctx: Context,
     env: mls.MlsContext,
@@ -49,6 +50,22 @@ export class StreamClient extends Client {
   get tip() {
     return this.log.ids.at(-1) ?? this.ctx.genesis;
   }
+  override restart(): never {
+    throw new Error("v2 restart requires explicit asynchronous compact reconstruction");
+  }
+  override publish(): never {
+    throw new Error("v2 publication marker unsupported; P6 deferred");
+  }
+  override async stageCommit(proposals: mls.Proposal[] = []) {
+    check(!this.data.fork, "observed fork halt");
+    const result = await super.stageCommit(proposals);
+    this.pendingAdmission = clone(result.admission);
+    return result;
+  }
+  override async stageAction(...args: Parameters<Client["stageAction"]>) {
+    check(!this.data.fork, "observed fork halt");
+    return super.stageAction(...args);
+  }
   override async receive(signed: Signed): Promise<"accepted" | "duplicate" | "wait"> {
     const e = entry(signed, this.ctx);
     integer(e.position, bounds.entries);
@@ -57,11 +74,20 @@ export class StreamClient extends Client {
       this.data.fork = true;
       throw Error("observed fork");
     }
-    this.observed.set(e.position, signed.id);
     if (e.position <= this.log.length) {
-      check(this.log.ids[e.position - 1] === signed.id, "observed fork");
+      if (this.log.ids[e.position - 1] !== signed.id) {
+        this.data.fork = true;
+        throw Error("observed fork");
+      }
       return "duplicate";
     }
+    // Reserve one slot for the next contiguous input so a full gap buffer can
+    // still make progress; failed input keeps its identity for fork detection.
+    check(
+      this.observed.has(e.position) || this.observed.size < (e.position === this.log.length + 1 ? 64 : 63),
+      "observed future-position capacity",
+    );
+    this.observed.set(e.position, signed.id);
     if (e.position > this.log.length + 1) return "wait";
     check(e.previous === this.tip, "predecessor mismatch");
     const state = decodeState(this.data.state);
@@ -193,6 +219,8 @@ export class StreamClient extends Client {
     await this.log.append({ record, outcome });
     if (record.opening) this.log.logical.set(outcome.logical, record.opening.action.id);
     this.data = next;
+    this.observed.delete(e.position);
+    if (!next.pending) this.pendingAdmission = null;
     return "accepted";
   }
   async projection(): Promise<string[]> {

@@ -344,3 +344,72 @@ against the original request. The existing native case now retains omitted,
 uncertain, reconstructed, suppressed and substituted completion failures plus
 explicit frontier offers. Fresh complete validation and independent review are
 required; these are eligibility corrections, with all full gates still closed.
+
+## P1e selected-profile closure and detached authority
+
+P1e adds two real Node and two Chromium cases after all 115 prerequisites.
+The separate authority suite has ten named groups with explicit positive and
+negative subcases. Its signatures and authority fold use an isolated clean
+GitSeq `d630554a7ba7d99c5f95eb77e1dfa7fd1f41637a` executable. The source,
+Go toolchain, module checks and binary hash are recorded in
+`fixtures/crypto/closure/gitseq-build.json`; the shared development `bin/gs`
+is not this verifier. A fresh build requires Go 1.27.0 on macOS arm64. The
+offline audit currently requires macOS `sandbox-exec`; Linux hosted P0 CI
+does not run or establish this result.
+
+```sh
+npm ci
+npm run check
+npm run build
+npm run build:decision-verifier
+NOSEQ_STRFRY_ROOT=/absolute/path/to/noseq-strfry-native \
+NOSEQ_P1D_ARCHIVE=/absolute/path/to/retained/segmented-recovery-worktree \
+NOSEQ_REAL_REPOSITORY=/absolute/path/to/noseq \
+npm run probe:protocol-closure
+npm run verify:protocol-closure -- artifacts/protocol-closure/runs/<uuid>/evidence.json
+```
+
+The archived dependency is the original P1d source `756bf4f9...` and its exact
+115-case evidence `6cf47684-b1be-413d-abb5-4402394af597/evidence.json`, SHA-256
+`7778b3f165cc5681191cdb3591888ed30b17a3030870976ed682e14bfc6a3ba4`, with
+all recursively referenced raw files under their original relative paths.
+It is a retained input, not something a rerun can replace. Synthetic authority
+fixtures bind those historical bytes under an external test-only policy;
+current P1e source/profile/119-case expectations reject the archived evidence.
+The real repository input supplies only its public signed sequence. The runner
+copies no real actor keys and writes no real adoption. Its complete offline
+audit must succeed structurally and then reject missing genuine adoption.
+
+For a detached export, use an explicitly trusted external policy:
+
+```sh
+npm run verify:decision -- --export /absolute/path/to/export \
+  --policy /absolute/path/to/trusted-policy.json \
+  --output /absolute/path/to/new-audit-directory \
+  --verifier /absolute/path/to/pinned/gs
+```
+
+The policy must be outside the export. The export contains exactly
+`export.json`, `source-and-sequence.bundle` and `evidence/`. The checker
+imports a complete signed prefix into a fresh repository with network and
+hooks disabled. It never executes source or configuration from that bundle.
+Results name validity only at the supplied frontier; none activates gates.
+The capsule and full trust/custody/privacy limits are in
+[proposed protocol adoption](protocol-adoption.md).
+
+Every attempt retains a new UUID, command logs, failures and actual raw
+reports. The authority-public archive keeps public signed inputs, external
+policies and command outputs in deduplicated gzip blobs, including exact
+maximum/+1 malformed inputs and symlink descriptions. Generated `.git` custody
+and private fixture keys stay outside this public archive. The public index
+preserves original-path provenance; it is evidence data, not an instruction
+to extract into arbitrary paths. Independent review must inspect the source,
+rerun the actual suites and challenge the decision/evidence checker.
+
+Exploratory failures remain under ignored `artifacts/protocol-closure/`.
+They include a misplaced test module, a wrong signer import, a wrong guarded
+primary artifact, a redundant acknowledgement and attempted anti-rollback
+rewind of an already observed synthetic room. Corrections use separate fixture
+forks and preserve the failed runs. Exploratory passes are not the final clean
+candidate or independent approval. P1e does not implement P6 crash transactions,
+client publication markers, production activation or external signer onboarding.

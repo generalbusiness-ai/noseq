@@ -1,0 +1,2 @@
+{"extends":"./tsconfig.json","compilerOptions":{"lib":["ES2024","DOM","DOM.Iterable"],"types":["node"]},
+ "include":["tests/protocol-closure/**/*.ts","scripts/protocol-closure*.ts","scripts/decision*.ts","protocol-closure*.ts"]}
