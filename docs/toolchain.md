@@ -272,3 +272,75 @@ reservations, known-control denial, full pending-buffer behavior, intact
 reconstruction and exact retries. These checks neither simulate a successful
 backend nor claim production crash transactions. The new required case brings
 the complete local suite to 102 tests plus the native size/COUNT observation.
+
+
+## P1d segmented recovery
+
+Use the same clean pinned toolchain and unchanged native build dependency:
+
+```sh
+npm ci
+npm run check
+npm run build
+NOSEQ_STRFRY_ROOT=/absolute/path/to/retained/noseq-strfry-native npm run probe:segmented-recovery
+npm run verify:segmented-recovery -- artifacts/segmented-recovery/runs/<uuid>/evidence.json
+```
+
+The runner requires all 102 previous cases and native observations before its
+six Node, six Chromium and one additional actual native composition test. It
+retains UUID-specific command/report/context/failure records, signed fixture
+roots/definitions/orders/checkpoints/frontiers, browser bundle and native
+config/trace/state files. It rechecks recursive source/profile/lock/provider
+identities after execution. A failed or skipped case, missing result, changed
+identity or forged approval is rejected. Evidence is not a security attestation
+against someone who controls both source and reports. The complete contract and
+remaining-gate audit are in [segmented recovery](segmented-recovery.md).
+
+No new dependency or crypto pin is introduced. `Gateway` gets opt-in root,
+reservation and extension-state/command hooks. The native fault proxy adds
+opt-in event suppression/substitution for negative readback tests; its original
+default forwarding remains unchanged. The original v1 gateway behavior remains
+the default and all nine P1c native cases remain mandatory. Browser state is a
+real IndexedDB fixture, Node records are actual immutable files, and encryption
+runs in the actual Chromium/Node providers. This does not implement P6 durable
+storage or process-crash recovery. The production host and Worker remain P0.
+
+P1d exploratory runs are retained under ignored
+`artifacts/segmented-recovery/exploration/`. Failures include a direct Node
+strip-only invocation of parameter-property TypeScript (`98b6f65e...`), a wrongly
+positioned optional v2-root validator (`2f2437c6...`), and a discriminating small
+byte-roll test (`949e0f3f...`) that found the founder proof was charged to the next
+interval before flushing the first. The correction measures the new singleton
+after any required flush. These are development failures, not candidate passes.
+Earlier partial exploratory records have limited source/command provenance;
+only the clean exact-head runner and actual independent review support a
+publication claim. Successful reruns never overwrite failures.
+
+Historical hosted P0 CI for main `1d4d775b342a34a32ca1690c461071b7010a9282`
+passed all 12 baseline cases in
+[run 34078093991](https://github.com/generalbusiness-ai/noseq/actions/runs/34078093991).
+The coordinator independently checked its raw evidence and a fresh origin clone
+and signed sequence in audit `6443fb0213ed72d0443526bcc909ed841b29b110`.
+That Linux baseline result does not run the macOS native dependency or establish
+any P1d crypto/recovery result.
+
+
+The first complete 115-test candidate run (`07b3e548...` at `7c6183f...`) passed
+its runtime assertions. Subsequent CLI challenges (`2bf05465...`) found that its
+evidence verifier accepted omitted command provenance and a rehashed command
+that skipped typechecking. The corrected verifier requires all six exact command
+records/logs and their full argument contracts. The original positive run and
+both accepted malformed probes remain retained; a fresh corrected-head full run
+and repeated rejection checks are required before review.
+
+Independent review of `d358c20...` passed the full 115-test runner but found two
+additional real native failures. Experiment `bfe40d81...` completed a recovery
+checkpoint while its root remained only an anticipated upload; experiment
+`31e5ce0b...` marked a requested suffix beyond F as available. Both rejected-head
+experiments remain under `artifacts/segmented-recovery/reviewer-experiments/`.
+The correction requires confirmed exact backend readback of every planned
+identity and the separately charged declaration, and computes suffix availability
+against the original request. The existing native case now retains omitted,
+uncertain, reconstructed, suppressed and substituted completion failures plus
+explicit frontier offers. Fresh complete validation and independent review are
+required; these are eligibility corrections, with all full gates still closed.

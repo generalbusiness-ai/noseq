@@ -1,6 +1,6 @@
 # Crypto preflight: incompatible candidate and proposed next direction
 
-Status: **P1a compatibility result and P1b bounded API investigation; encryption profile not adopted.**
+Status: **P1a incompatibility plus P1b–P1d bounded API, wire and recovery investigations; encryption profile not adopted.**
 
 The pinned Marmot specification and candidate library do not share an identity
 proof format. The candidate also permits withdrawing an application payload
@@ -471,3 +471,15 @@ per-identity reservations before publication and keeps verified contiguous
 control denial before a fallible quota/retention step. Real lost-response,
 reconstruction, retry and full-buffer controls are required in G5-F09. Earlier
 passing records do not establish those later requirements.
+
+## P1d segmented full-history proposal
+
+The [segmented recovery contract](segmented-recovery.md) addresses the small v1
+archive limit with separately keyed immutable intervals and a compact accepted
+owner state. It specifies exact graph/bytes, owner-attested control trust,
+full-grant custody, conservative complete-retention eligibility, small actual
+Node/Chromium/native vectors and the precise remaining gate decisions. The
+separate `probe:segmented-recovery` runner requires all 102 previous tests plus
+13 new tests; `verify:segmented-recovery` accepts observations only. No full gate
+or production profile is activated. The original incompatible Marmot pair and
+eager-payload retraction remain STOP findings, not bypassed dependencies.

@@ -15,11 +15,16 @@ are part of the proposal. The machine identity is
 The investigation decision is **continue the client/recovery investigation;
 evaluate the prefix gateway boundary; keep adoption pending**. All G1–G5 remain
 unpassed. The bounded direction selects membership at the gateway's highest verified
-retained prefix, including old-history exposure after an unseen removal. Eight
-real local gateway/strfry socket cases exercise that proposal. Independent review
-and explicit production adoption remain absent. The pure policy model alone
+retained prefix, including old-history exposure after an unseen removal. Nine
+real local gateway/strfry socket cases exercise that proposal. Independent publication review is recorded in GitSeq; explicit production
+adoption remains absent. The pure policy model alone
 cannot close a gate. Archive correctness also includes a declared owner
 attestation trust boundary; it is not independently verified MLS control replay.
+
+The separately versioned [P1d segmented recovery proposal](segmented-recovery.md)
+extends supported full-prefix histories with immutable intervals, compact grants
+and vaults, and exact prepared-closure reservations. Its root explicitly names
+this ordering profile. It does not reinterpret the v1 archive below.
 
 ## Exact dependencies and scope
 
