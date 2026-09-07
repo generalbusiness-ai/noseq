@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5b953d95844d7d8fdc818169945848a70eef9f19","text":"Merge retired a covered predecessor; the successor is at docs/relay-profile.md."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5c5e6958e4e61bbaded805b54d98c1b764dff06d","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/index.html."}
