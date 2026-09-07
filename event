@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ffa78f80c655a4554313c7c689ade88089fa9208","text":"Merge retired a covered predecessor; the successor is at tests/harness.test.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:06947bae169b197474a6959a3d735f270cacd7a5","text":"Retire my earlier unlanded candidate for NOTICE: merge #538 settled its protecting #350 commitment and published the exact approved successor at this path. Earlier source, review and failure evidence remain preserved."}
