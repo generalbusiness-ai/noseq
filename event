@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:9fccb0a0b1c63f0113e3e66a404a5ee641a30ff1","text":"Merge retired a covered predecessor; the successor is at tests/ordered-mls/fixture.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:a54ce562806c4a36df53aa30f4099386ebc0ac59","text":"Merge retired a covered predecessor; the successor is at docs/toolchain.md."}
