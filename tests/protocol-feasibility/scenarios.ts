@@ -25,8 +25,10 @@ export async function setup() {
   const archive = await createArchive(owner, g.event, definition, starting);
   const verified = await VerifiedArchive.verify(archive, { owner: g.context.owner, genesis: g.context.genesis });
   const owner2 = await join(owner, owner2Device, c.event, verified.snapshot); const bob = await join(owner, bobDevice, c.event, verified.snapshot); const dave = await join(owner, daveDevice, c.event, verified.snapshot);
-  worlds.push({ root: g.event, context: g.context, definition, initial: starting, journal, owner });
-  return { g, env, definition, starting, journal, owner, owner2, bob, dave, ownerDevice, owner2Device, bobDevice, daveDevice, carolDevice, bob2Device };
+  const world = { g, env, definition, starting, journal, owner, owner2, bob, dave, ownerDevice, owner2Device, bobDevice, daveDevice, carolDevice, bob2Device };
+  // A scenario may replace its journal after reconstruction; retain the current signed frontier, not the pre-restart object.
+  worlds.push({ root: g.event, context: g.context, definition, initial: starting, get journal() { return world.journal; }, owner });
+  return world;
 }
 type World = Awaited<ReturnType<typeof setup>>;
 export async function apply(w: World, from: Client, value: string, recipients: Client[] = [w.owner, w.owner2, w.bob, w.dave], logical?: string, outcome: "apply" | "refuse" | "runtime-failure" = "apply") {
