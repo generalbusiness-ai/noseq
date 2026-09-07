@@ -1,1 +1,1 @@
-{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0fe7edcbd476b558908748f3d3bdaf9ce2e23f0d","text":"Merge retired a covered predecessor; the successor is at protocol-feasibility.vite.config.ts."}
+{"target":"git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:161c6b11bc2347a6dad4e3f35e9286ac5ae8db2c","text":"Merge retired a covered predecessor; the successor is at tests/protocol-feasibility/browser.ts."}
