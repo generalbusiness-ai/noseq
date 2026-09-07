@@ -10,161 +10,184 @@
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "e4784df7e2d0a0737c467852c5a53ba8dc2de835",
       "sha256": "5b1eeae62df562b81d873b1e1d97a4a847506da176e4b1964dfa3cd557e2e454",
-      "bytes": 20545
+      "bytes": 20545,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:6e6a95887b759a1b9f2d7f0caf7ed035174cfb75"
     },
     {
       "path": "docs/toolchain.md",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "600287bece66bd6474a20f517e3d6f7946b204d1",
       "sha256": "82939a4c7b94c011fa30fe79e89a2b61369a9212de50b1c7194627f4c4c61a6e",
-      "bytes": 34127
+      "bytes": 34127,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:3137581c9c4618a699d149c11cb3053a60ad29f0"
     },
     {
       "path": "fixtures/crypto/closure/profile.json",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "cc5590c71c780fb83f008e08f00b48131f8b51f2",
       "sha256": "cfaa2429ec2102867612c3805132476386497fb00451a6f260af57c0a7c240ca",
-      "bytes": 14143
+      "bytes": 14143,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:a6298123a37572e9d9bef4c30a3a270f55e9f925"
     },
     {
       "path": "fixtures/crypto/gates/profile.json",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "bbef5b49bbb003ea0ab14024a019510a5af79989",
       "sha256": "2fe6d83a2e3bcaf0eeb4cb79f4834ff64ff5ee16365404b471c64a18080e00cb",
-      "bytes": 9175
+      "bytes": 9175,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:bc936226803898d97a0a3c6b3a0e1a0822ab978b"
     },
     {
       "path": "package.json",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "9eea4821aa2efbfe3b1c27fae397988b9e4d9049",
       "sha256": "b1b40262c191cb273a391a50d3ac7921ce57df87f33bacaa7426f52625b05421",
-      "bytes": 3370
+      "bytes": 3370,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:25916dca8a84bbc2179bddcbe76dcf690814fff9"
     },
     {
       "path": "protocol-gates.config.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "edfa982a781bfdf87f94c003a4976652be1bd6c6",
       "sha256": "e38f9941eaafc9e51aa7eec0425c15802328028c19a739acd26297e9e893f655",
-      "bytes": 225
+      "bytes": 225,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:1a7f2e7db2d42abb6e210fa09e474d7873cf4463"
     },
     {
       "path": "scripts/decision-evidence.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "6d53ac1ff4ba4ad13cfdd9c857154326c858ad00",
       "sha256": "08c187a0f5bab3a8e1b1567c09113f9a294ccee342fdc8b64cd6af3410450aa3",
-      "bytes": 8764
+      "bytes": 8764,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:dbac80159b1ed4ef719289d8a4d316b2ec088f58"
     },
     {
       "path": "scripts/decision-io.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "eaf41eed6cea398e29341cffd66f2af34dcae350",
       "sha256": "3cc960ee5c22ecccd5ae75c96effa10a31fc19e0be0e241a57b3563e9ebcdd42",
-      "bytes": 9871
+      "bytes": 9871,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:8a437bcce4bae22ebaed106254b58470cb487d2a"
     },
     {
       "path": "scripts/decision-public-evidence.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "aaaa77c927b2dcb2e3151b0872cf65c11e3a1da9",
       "sha256": "1e8d40fa4c34b32f4ab9e5544aa2338973283b8c9b9e7f378b059704ac6f7105",
-      "bytes": 6697
+      "bytes": 6697,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ddd4a7e058db67761c1cf1628154128f8e91ce3a"
     },
     {
       "path": "scripts/decision-types.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "ae9aadf7ee6754302227ea9d5afd6a152012a985",
       "sha256": "74c8e6ea2369adb9d35575fb7f4e48509196d923aec64352d2cb929b45fc1ed2",
-      "bytes": 2015
+      "bytes": 2015,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:53af600ab8fbe1f4398e2bec545970d1e35716c9"
     },
     {
       "path": "scripts/decision-validator.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "6a1d66666e3bfa16c674a21e0f50412202747b22",
       "sha256": "b0ad0d8d62ebbb8e5b7dd9604ca675e9a1a56667caf6f907f75149b63558d725",
-      "bytes": 19484
+      "bytes": 19484,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:5fcf58be5f45da636a4f9e4c7495688639d81cc2"
     },
     {
       "path": "scripts/protocol-gate-core.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "5338efe99e03e3a6677f5e8a6d464d005594720f",
       "sha256": "5a2da6c6694b40567f68337f6393bc972ef69e310f5f8b2b6d68178b5a114ff5",
-      "bytes": 13977
+      "bytes": 13977,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:7fc2def0c3336d801403331d0d6f8313352a7b78"
     },
     {
       "path": "scripts/protocol-gate-readiness-evidence.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "4101ca8179bb783ef69c822d0c4fd9c22b6be1d1",
       "sha256": "7c75937c6acab823003300df610e9c15140e188ad10b54ce2a9ff10b7a0fad3a",
-      "bytes": 7370
+      "bytes": 7370,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ac5593df3f1a3051f58554de32b847773d97e4ce"
     },
     {
       "path": "scripts/protocol-gate-readiness.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "50673a826db9258d1c02d624a80aa7f0a7a03aa5",
       "sha256": "4eef7add8262a7ddbd7325efda82fae2290ff36732deab63ad06cb9cc9b08aed",
-      "bytes": 4854
+      "bytes": 4854,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:9109f8f00e15bff33201c2f688c21b9e7dc940aa"
     },
     {
       "path": "scripts/protocol-gates.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "9fcce980914bb3a599c4e02fa7bed62a8660e997",
       "sha256": "752d0adf9c578ac9fd4c8d1dfcb5d752db32efa717054da18ffb9d30602f573c",
-      "bytes": 1443
+      "bytes": 1443,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:038c2725784fdf518978fd711359db8b771f40f2"
     },
     {
       "path": "tests/crypto-feasibility-preflight.test.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "91e15c96998ff4640f7c6c17b1d4925a61f44d53",
       "sha256": "1d20e1fb3e811f2b2448c3d9d0ed8ff23cfbc810beb9bea8aae00f9b9db4c88b",
-      "bytes": 6166
+      "bytes": 6166,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:12be7162ecb6d1e62c2eb61094177282345c7924"
     },
     {
       "path": "tests/harness.test.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "b66955c68ff54a742c80b08c9e66d4415a24b428",
       "sha256": "3e941810f88661c72aab16762d8e3797ce1e4e71cbb60f6728d8e42d5b24bb69",
-      "bytes": 6466
+      "bytes": 6466,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:0f7ff322896adfe371b6ce6ada702bb26ecc23bc"
     },
     {
       "path": "tests/protocol-closure/authority.test.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "6a99fa25437c8207e07b9135c4bbed27a88e85dc",
       "sha256": "bdc8120cec54e468853bd61a14f83da04a26079b69cd02884d5f0d6f7b6c38d8",
-      "bytes": 19598
+      "bytes": 19598,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:53f6033c9d7e0bf526953fbf0a8c1f8957a88086"
     },
     {
       "path": "tests/protocol-gates/authority.test.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "199f6543dd07be2dbff1378b20673f2828d2a0e0",
       "sha256": "5de50acd6781739c004ff5ff3bb793218df882b29c54793e88e79f3761c5f6c5",
-      "bytes": 22461
+      "bytes": 22461,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:d66e151be591b4a57dca33da71e1590c12fa53a4"
     },
     {
       "path": "tests/protocol-gates/diagnostic.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "9c578a1b5b8b9d9182cb378f900fb6cc69913f3d",
       "sha256": "8458d21e886555f93b7252156ed5a83043fee55c81157f42e2d1e7cd1b1d6a47",
-      "bytes": 1155
+      "bytes": 1155,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:1ff063a652b6a60fbe34b0da369802a234409777"
     },
     {
       "path": "tests/protocol-gates/fixture.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "e402567f2034ebff0e48cd0bbfbda4d4b2be7dab",
       "sha256": "e43de6da00d49e086ccd88ad48a9710a4db1c155a79de005fda689348eadb0e5",
-      "bytes": 5698
+      "bytes": 5698,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:3e878659a28f28e45bf507f21be7f15141b73343"
     },
     {
       "path": "tests/protocol-gates/publication.ts",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "93bbca405372150033ae0e8cd0b6769e4558f744",
       "sha256": "052a0159fc1936806d3263936dccfe6db436ec186ac7d9f70dbd0155d39cff97",
-      "bytes": 4469
+      "bytes": 4469,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:26adb9e3e1e450dad3d831e7d0fce6c5919c0363"
     },
     {
       "path": "tsconfig.protocol-gates.json",
       "commit": "63401d7bc9604897632b5924107053952894b4b5",
       "blob": "3e7a47a8f311ff9389a1c0b4375f5116fe4fee42",
       "sha256": "e5c693e7dad87bec6d373e2e3df11bca901d5f6c3b2c730a94669d9b7aa418b5",
-      "bytes": 199
+      "bytes": 199,
+      "event": "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:3b3eaf19e9653d43a85f89c7ea75dff5f6ca7de8"
     }
   ],
   "request": "ebf06545b799af4e0450aea29c39be07acfbbd85",
