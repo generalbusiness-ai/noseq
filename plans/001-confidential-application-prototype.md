@@ -1,8 +1,9 @@
 ---
 date: 2026-09-06
-status: implementation not started; publication review tracked in GitSeq
-planned_at: 2554c582db730cd3d64490970a573eab1463672e
-tracking: "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:c70578a4f674824f7b55ce948aff6f4c6d08f19c"
+status: P0 complete; P1 investigations landed; G1–G5 unpassed; later stages gated
+planned_at: 499dc13e3ef05f8a30f844df225dc17ce4162297
+revised: 2026-09-07
+tracking: "git:sha1:77aeeeb3fa42aeb6babdf961f6397ba73fada68b#git:sha1:ae8cb5e84bff85e1cf775b2624ef061c07d4846a"
 ---
 
 # Plan 001: Prove a confidential application framework over Nostr
@@ -14,9 +15,10 @@ recovery and deterministic replay work together. A working Nostr connection and
 a spatial-board demonstration are insufficient.
 
 This is an implementation handoff, not an implementation completion report.
-The current request covers design review and planning. Subsequent implementation
-work must be commissioned in GitSeq. Publication of this plan does not adopt an
-unproven cryptographic profile or authorize a deployment.
+Documentation request #108 covers this revision only. Separate requests have
+commissioned P0 and bounded P1 investigations; no G1–G5 gate has passed. Later
+work must satisfy its gates and be commissioned in GitSeq. Publication of this
+revision does not adopt an unproven cryptographic profile or authorize deployment.
 
 > **Executor:** Read this file completely. Implement the stages in dependency
 > order, retain the specified evidence, and stop at a failed gate. Do not replace
@@ -29,25 +31,31 @@ unproven cryptographic profile or authorize a deployment.
 |---|---|
 | Priority / effort / risk | P1 / large, staged / high protocol-integration risk |
 | Category | Direction, protocol feasibility, implementation handoff |
-| Baseline | `2554c582db730cd3d64490970a573eab1463672e`, 2026-09-06 |
+| Baseline | `499dc13e3ef05f8a30f844df225dc17ce4162297`, 2026-09-07; initial design review at `2554c582db730cd3d64490970a573eab1463672e` |
 | Prerequisites | Independent architecture review #46; separate implementation request |
 | Outcome | Reproducible comparative prototype with explicit supported security and recovery policy |
 
-Noseq at the baseline contains the [architecture draft](../notes/2026-09-06-noseq-architecture.md),
-repository instructions, license and GitSeq configuration. There is no source
-tree, package manifest, lockfile, test suite or deployment configuration. No
-Noseq `npm test` or `npm run check` exists yet. All stage commands below are
-**required scripts to create**, not commands claimed to have passed today.
+Noseq now contains the P0 toolchain and generic shell/health endpoint plus bounded
+P1a–P1d crypto, protocol, relay and segmented-recovery probes. P0 is complete;
+P1 is in progress. Read [toolchain](../docs/toolchain.md),
+[crypto feasibility](../docs/crypto-feasibility.md) and
+[segmented recovery](../docs/segmented-recovery.md) before changing their paths.
+The latest inspected P1d review reports 115 actual tests plus 44 evidence/gate
+checks; this plan revision did not rerun them. Hosted CI proves P0 only.
+`check`, `build`, `test:harness` and the named `probe:*`/`verify:*` scripts exist.
+Full `test:crypto-feasibility`/`gate:protocol` remain closed; P2–P9 command
+placeholders fail. Do not recreate existing files or mistake a successful probe
+for protocol adoption. The original design-review reports remain historical.
 
 Run this drift check before implementation, from the repository root:
 
 ```sh
 git status --short
-git diff --stat 2554c582db730cd3d64490970a573eab1463672e..HEAD -- package.json package-lock.json .node-version .gitignore tsconfig.json vitest.config.ts vite.config.ts wrangler.jsonc index.html src tests scripts fixtures examples docs infra .github NOTICE README.md
+git diff --stat 499dc13e3ef05f8a30f844df225dc17ce4162297..HEAD -- package.json package-lock.json .node-version .gitignore tsconfig.json vitest.config.ts vite.config.ts wrangler.jsonc index.html src tests scripts fixtures examples docs infra .github NOTICE README.md
 ```
 
-Documentation published with this plan is expected. If runtime code already
-exists, inspect its changes and revise the baseline rather than overwriting it.
+Documentation published with this revision is expected. Inspect runtime changes
+since the baseline and reconcile existing probes before implementing any stage.
 Keep unrelated local changes. Use `request/<work-package>` branches, exact-path
 artifacts, independently reviewed exact heads and GitSeq landing under `AGENTS.md`
 and the installed GitSeq skill. Commits must cite their work request with a
@@ -68,8 +76,8 @@ deferred capability is required; it must then stop for a new scoped decision.
 
 ## Baseline and reuse
 
-Use Atseq at
-[`6477b73f3be27880fd592f7015b4c7dcb1eda74a`](https://github.com/generalbusiness-ai/atseq/tree/6477b73f3be27880fd592f7015b4c7dcb1eda74a),
+Use completed Atseq at
+[`e5856bd9c538b35c2dce4e87d51800f1eaa090f9`](https://github.com/generalbusiness-ai/atseq/tree/e5856bd9c538b35c2dce4e87d51800f1eaa090f9),
 available locally at `/Users/hughpyle/play/atseq` on the planning machine. Never
 use an uncommitted checkout as a dependency or modify that repository.
 
@@ -87,10 +95,26 @@ wire contracts. The evaluator's `canonicalJson` measures runtime values; use the
 Nostr implementation's specified serialization for signed events.
 
 Observed tools were Node `v26.8.1`, npm `11.19.0` and Git `2.50.1`. Docker's binary
-exists; neither its daemon nor a relay image was tested. These are observations,
-not a supported dependency matrix. Stage P0 pins the actual tested environment.
+existed at initial planning; it was not tested then. The current P0 toolchain
+and native P1c/P1d relay probe records supersede that initial environment survey.
+Use their pinned tested environment rather than treating these observations as
+a supported dependency matrix.
+
+The [dated final assessment](../notes/2026-09-07-atseq-final-assessment.md) records the
+change from the original S4 pin, exact retained evidence and AT-01–AT-10 lessons.
+Reuse the S5/S6 source-closure, archive-pin and worker-budget corrections; do not
+port PDS wire, activation control or the full-prefix performance bottleneck.
+Atseq's completed public-data spike does not prove Noseq crypto or privacy.
 
 ## Decisions and protocol gates
+
+The original stage directions below are conditional requirements, not instructions
+to discard later reviewed probes. Current proposed wire/crypto/recovery details
+live in `docs/protocol-v0.md`, `docs/confidentiality-and-recovery.md`,
+`docs/relay-profile.md` and `docs/segmented-recovery.md`. They do not acquire
+adoption through this plan. Before P2, reconcile any original Marmot-specific
+step with the explicitly adopted selected profile; stop on conflict. Preserve
+existing P1 observation suites and retain exact decision provenance.
 
 These are scoped prototype choices and required decision outputs. A choice
 marked **gate** must be specified, implemented as an isolated probe and reviewed
@@ -100,7 +124,7 @@ before dependent work. Do not invent cryptography to make a gate pass.
 |---|---|
 | Authority | One creator/owner initially governs membership and immutable genesis; transport administration is distinct from application permissions. No owner transfer in v0. |
 | Order | One sequencer per instance; immutable entries and permanent interpreted outcomes at an accepted frontier. No reliance on relay arrival order or timestamps. |
-| Encryption — gate G1 | Pin Marmot protocol plus library and prove an adapter compatible with permanent interpretation. Marmot settlement is not finality; transport order alone does not fix this. |
+| Encryption — gate G1 | The original Marmot pair is incompatible (P1a). Separately commissioned ordered MLS probes P1b–P1d are a Noseq-specific candidate, not Marmot interoperability. Complete independent decision evidence/adoption before activating G1. |
 | History — gate G2 | Choose and test a recoverable history/archive policy, including its extra key-custody and forward-secrecy limits. “Back up the Nostr key” is insufficient. |
 | Membership — gate G3 | Define the exact log boundary between public transport admission and encrypted group membership. Specify stale-epoch and removal behavior, including in-flight requests. |
 | Signed wire — gate G4 | Specify retained actor proof, submission identity, sequencer proof, canonical bytes, cross-instance binding and all encoded-size limits. |
@@ -115,8 +139,8 @@ before dependent work. Do not invent cryptography to make a gate pass.
 ## Design-review dispositions
 
 The independent [design report](2026-09-06-design-review.md) is signed report #50,
-accepted as planning input by #51. It reviewed the immutable architecture at the
-baseline, independently of this plan. Acceptance of the report does not assert
+accepted as planning input by #51. It reviewed the immutable architecture at
+`2554c582db730cd3d64490970a573eab1463672e`, independently of this plan. Acceptance of the report does not assert
 that its feasibility gates have passed. Its findings are all covered below.
 A delayed second report #60 is assessed separately in
 [supplementary dispositions](2026-09-06-supplementary-review-dispositions.md),
@@ -137,7 +161,36 @@ including explicit reasons for qualifying several suggested solutions.
 | DESIGN-11: Reproducible integration | P0 establishes real commands and evidence rejection; P1 pins dependencies; P9 assembles the full fault matrix and honest cloud status. |
 | DIRECTION-01: Unrelated second app | P7/P9 require unchanged host and deployment identities plus two-instance isolation; no application-specific host branch. |
 
-### Initial resource budget to freeze in P1
+### Final Atseq evidence dispositions (2026-09-07)
+
+These extend the original review mapping without rewriting either signed report.
+P1c/P1d already implement bounded candidates for several requirements; inspect
+and reuse that evidence before proposing new work. This is a conditional handoff,
+not adoption of new trust boundaries or permission to widen a live request.
+
+| Lessons | Existing findings | Required stage evidence |
+|---|---|---|
+| AT-01/03: exact closure and separate bounds | DESIGN-02/03/06/10; N2/3/7/8 | P1/P3/P5/P6 compare readers with different caches and the same signed closure; missing, corrupt, oversized and external assets; explicit unavailable transport |
+| AT-02/09: exact retry and fixed definition | DESIGN-04/06; N3/4/8 | P2/P4/P6/P8 preserve exact encrypted submission after lost reply/removal; reject changed content; no v0 activation |
+| AT-04: trust before import writes | DESIGN-02/05/08; N2/9/10 | P6/P8 preserve pins, checkpoint, vault, outbox and crypto frontier on conflict/interruption; retain declared historical trust interval |
+| AT-05/06: failure and prefix cost | DESIGN-08/09/10; N10/11 | P3/P6/P9 distinguish semantic budgets from operational watchdogs; compare incremental and cold replay, count actual work |
+| AT-07: honest evidence | DESIGN-11; N12 | P0 already retains UUID started/failure records; P9 must retain all failed/interrupted runs and bind complete command/case/log/result/source identities |
+| AT-08/10: authoring and populated document | DIRECTION-01, DESIGN-10; N6/7/12 | P7/P9 add agent creative trial, canonical stable-ID document, assets/actions, and local-camera/animation separation |
+
+G1–G5 closure additionally needs genuine independent decision evidence and the
+separately commissioned detached decision validator; a publication approval or
+passing observation report cannot open the gates. The proposed owner-attested
+history, old-vault capabilities and named-prefix unseen-removal exposure must
+remain explicit. Read the current P1 proposal documents for exact contracts.
+
+### Initial resource budget and current candidate
+
+The table preserves the original planning targets. Current proposed encoded
+contracts are in `docs/protocol-v0.md`, `docs/relay-profile.md` and
+`docs/segmented-recovery.md`; inspect them before implementation. They already
+resolve chunks, frame expansion, segmented custody and retention reservations
+under separately reviewed investigations. Do not replace those measured bounds
+with the initial targets below. G1–G5 and profile adoption remain incomplete.
 
 These are proposed application limits, not claims about platform defaults. P1
 must test encoded crypto expansion and actual relay acceptance, then freeze a
@@ -234,16 +287,22 @@ profile or wire types without an agreed artifact.
 3. Create the command contracts in the table below. An unimplemented suite must
    exit nonzero with “stage not implemented”, never pass with zero required cases.
    `check` must typecheck every target; `build` must build client and Worker.
-4. Define machine-readable evidence containing source commit, lockfile hash,
+4. Preserve P0's existing UUID run directories and exclusive started/failure
+   writes. An interrupted run remains incomplete; a later success cannot hide it.
+   Define machine-readable evidence containing source commit, lockfile hash,
    runtime/profile/fixture identities, command, required-case list and results.
    Reject missing, skipped or mismatched required cases. Keep generated bundles,
    keys and bulk benchmark output ignored; commit only synthetic fixtures and
-   sanitized summaries explicitly listed by later stages.
+   sanitized summaries explicitly listed by later stages. P9 also binds every
+   command exit, complete required-case inventory, logs and retained result hashes.
+   Mutation tests reject a stale success, changed log/result and incomplete run.
 
 **Verify:** `npm ci`, `npm run check`, `npm run test:harness`, `npm run build`
 exit 0 in a clean checkout. Harness tests include an intentionally absent suite
 and skipped mandatory case and confirm both are rejected. P1–P9 commands still
-report incomplete until their implementations exist.
+report incomplete until their complete implementations and decision evidence exist.
+P0 is already complete at the inspected baseline; preserve its 12 mandatory cases
+and command contracts rather than rebuilding this stage from scratch.
 
 ### P1 — Prove the security and replay contract before committing to the stack
 
@@ -252,14 +311,20 @@ report incomplete until their implementations exist.
 `src/crypto/adapter.ts`, `tests/crypto-feasibility.test.ts`,
 `fixtures/crypto/`, `scripts/protocol-gates.ts`.
 
-1. Pin Marmot protocol and implementation together. Compare current account-proof,
+1. Preserve the completed P1a incompatibility regression and inspect the P1b–P1d
+   ordered MLS candidate before further probing. When evaluating Marmot, pin its
+   protocol and implementation together. Compare current account-proof,
    transport, key-package and device-admission surfaces byte-for-byte; a library
    README or older NIP-EE description is not a compatible binding. Do not implement
    unfinished branch-draft multi-device wire as normative interop. Name any
-   Noseq-specific transport binding. Begin with
+   Noseq-specific transport binding. The original starting candidate was
    [`marmot-ts` 2f60dbb](https://github.com/marmot-protocol/marmot-ts/tree/2f60dbb27d284f617ad873ccda568c0f2f07aa79)
-   as a candidate, not an approved dependency. Document required signer operations;
-   full account-proof support can need raw BIP-340 signing beyond `signEvent`.
+   and remains an unapproved, incompatible pair. Document required signer operations;
+   P1a has since disproved this pair: protocol proof v2 (0x8009) differs from
+   candidate legacy v1 (0xf2f1). Raw digest signing beyond `signEvent` belongs to
+   that legacy library API, not inherently to current Marmot. Use the landed
+   preflight as a regression; continue only the separately commissioned ordered
+   MLS investigation. Do not restart production integration of the rejected pair.
    Exercise local signer, NIP-07 and NIP-46 capability probes and fail unsupported
    paths explicitly. Do not demand external signer support for the default flow.
 2. **G1:** feed identical signed prefixes in different arrival batches to separate
@@ -382,11 +447,20 @@ seeds are recorded; no custom signature algorithm is introduced.
    State whether plaintext content identifiers leak equality/fingerprints and
    choose identifiers accordingly. Retain old source bytes even though v0 fixes
    the active definition. Never interpret a locally newer manifest by accident.
+   Isolate the exact authenticated closure from extra cached files. Specify
+   aggregate plaintext admission, encrypted transport and retained-evidence
+   budgets separately, including alias/framing costs. Readers either verify
+   the same available bytes or pause; transport refusal cannot fabricate an
+   invalid definition. Carry forward P1d retention reservation evidence.
 4. Expose pure fold results and per-entry outcomes; no required database/query
    layer. Schema/business refusal may produce a deterministic ineffective result.
    Missing source/key material, unknown profile and evaluator/runtime failure
    pause progress. An operational watchdog timeout cannot become a business
    outcome. Page outcome history so append cost does not copy all prior outcomes.
+   Give replay/import a measured watchdog separate from preview. Test worker
+   failure/timeout and cancellation at atomic boundaries without losing pending
+   bytes. A catchable transient evaluator fault must pause, not become a terminal
+   invalid-source result. Retain last-good state and the exact failing frontier.
 
 **Verify:** `npm run test:runtime` runs the same corpus in Node and a Chromium
 worker and compares canonical state, outcomes and profile identities.
@@ -524,6 +598,10 @@ completed P5 is required for integration and P6 completion. **Paths:** `src/cryp
    state. Test corruption, rollback to an old archive, wrong recovery credential,
    missing history and interrupted import. Declare limitations when there is no
    independent checkpoint capable of detecting a stale but authentic backup.
+   Before any import write, compare trusted owner/genesis and prior checkpoint.
+   Quarantine verified input until atomic promotion; conflict or interruption
+   preserves all pins, selected app, vault/crypto state, pending ciphertext and
+   frontiers. Test a valid foreign archive against a populated existing device.
 
 **Verify:** `npm run test:client` and `npm run test:recovery` cover every atomic
 boundary with two devices and two tabs, forced termination, reordered relay
@@ -539,7 +617,9 @@ only recovery material. No test substitutes a fixed group key for G1/G2.
 
 ### P7 — Load unrelated applications and render direct projections
 
-**Depends on:** P3/P6. **Paths:** `src/ui/{host,controls,bindings,svg,geometry}.ts`,
+**Depends on:** P3/P6, with P4 provisioning and declared P1 owner/admission
+fixtures for the agent creation trial. P8 supplies final onboarding integration.
+**Paths:** `src/ui/{host,controls,bindings,svg,geometry}.ts`,
 `src/client/agent.ts`, `examples/spatial-board/`, `examples/inventory/`, `tests/ui/`,
 `tests/dynamic-apps.test.ts`, `scripts/generate-example-bundles.ts`.
 
@@ -556,11 +636,29 @@ only recovery material. No test substitutes a fixed group key for G1/G2.
    byte order; reject non-finite or over-limit values. Allocate/transfer presentation
    buffers without exposing mutable aliases to canonical state. Bind Float32Array
    to three.js through this trusted adapter; compare bytes, not GPU pixels.
-3. Author a collaborative spatial board and an unrelated inventory/count workflow
+3. Make the direct-document experiment explicit: the fold maintains populated
+   bounded JSON with stable semantic IDs, relationships, values, retained asset
+   references and declarative action bindings. Use an identity binding with no
+   query that reconstructs the document from another dataset. IDs derive from
+   signed creation input or deterministic rules, survive reorder/replay, and
+   reject duplicates/dangling targets. Reuse an inert SVG subset and trusted
+   Three.js adapters; general glTF import is optional and separately bounded.
+   Local camera, hover, animation clocks and GPU pixels never mutate canonical
+   state or sign actions. Shared gestures submit quantized data explicitly.
+4. Author a collaborative spatial board and an unrelated inventory/count workflow
    entirely in retained manifests/schemas/folds/views/assets. Start the built host
    before generating and loading both bundles. Keep the same generic source and
    bundle hashes; no app-specific import, route, server deployment or rebuild.
-4. Keep SQL absent from the projection path. SQLite in the DO remains legitimate
+5. Add a distinct agent creative trial after host startup, beyond generated
+   fixtures. Through documented generic operations the author supplies retained
+   source, validates/previews, creates an instance via P4, and submits/inspects
+   actions. Exercise identity-dependent refusal and exact retry with synthetic
+   participants. Record source/build/deployment hashes, sanitized calls, grants
+   and independent authorized replay; preserve original versus repeated runs.
+   Preview identity is explicit simulation, never a grant or signed outcome.
+   One short-session app and an accumulating workflow test both intended uses;
+   neither implies deletion guarantees or proven indefinite service.
+6. Keep SQL absent from the projection path. SQLite in the DO remains legitimate
    journal storage. A future database projection can implement another consumer
    without changing the definition/order/crypto proof contract.
 
@@ -572,7 +670,14 @@ startup, submitted actions through the generic controls, and produced the same
 state/outcomes/buffer bytes on authorized clients. Include unchanged server
 deployment identity and two independent instances: definitions, actions,
 subscriptions, state and crypto material cannot cross between them. Retain before/after hashes,
-trace and screenshots; screenshots alone do not prove determinism.
+trace and screenshots; screenshots alone do not prove determinism. Test stable
+IDs through insert/update/delete/reorder and replay, missing assets, hostile
+bindings and stale targets. Camera/animation changes leave the canonical hash
+and log unchanged; a deliberate action changes them through the signed path.
+Compare canonical documents, outcomes and buffer bytes across Node/Chromium.
+Record whole-document copying, conversion, transfer and renderer resource disposal
+separately. If required scenes exceed the existing 128 KiB state cap, stop for a
+profile decision; do not silently introduce native typed-buffer folds.
 
 ### P8 — Connect invitation-led identity, membership and recovery
 
@@ -637,6 +742,15 @@ default requires no raw key paste or infrastructure selection.
    peak memory. Check that append does not duplicate all previous outcomes and
    that slow consumers/large inputs meet declared bounds. Initial measurements
    establish a baseline, not an invented service-level guarantee.
+   Also count entries/signatures checked, decryptions, source bytes served and
+   fold evaluations on one-entry catch-up/exact retry. Retain Atseq's 10,000-entry
+   p50/p95 append 18.656/39.524 s, Node replay 7.885 s, catch-up 6.591 s and browser
+   replay/transfer 15.422 s as a separate local reference, never a Noseq target.
+   Reuse P1d's compact record/segment design where proven; its small counters do
+   not close this benchmark. Evaluate verified-prefix/authenticated-extension
+   reuse only after G1; compare each frontier/state/outcome to full cold replay
+   under fork, rollback, restart, missing-source and crypto-control cases. Keep
+   any unproven optimization explicit and long-lived use conditional.
 3. Test resource boundaries just below/at/above every exposed cap, including
    complete encrypted event size, source closure, live queue and storage quota.
    The expected over-limit result is a specific refusal/pause without partial
@@ -657,8 +771,10 @@ any unrun deployment gate separately.
 
 ## Command contracts
 
-P0 must implement these names or revise this plan with the tested replacements
-before further execution. Run all commands from the Noseq root.
+P0 has established these names and failing placeholders. Later stages must
+fulfil their contracts before claiming a pass. Existing `probe:*` and `verify:*`
+scripts are documented in `docs/toolchain.md`; successful bounded probes are not
+full-stage acceptance. Run all commands from the Noseq root.
 
 | Command | Required result when its stage is complete |
 |---|---|
@@ -697,11 +813,13 @@ additional security gates to their implementing stages.
 | A9: Costs and direct rendering | Bounded state, replay and JSON-to-buffer measurements at three log sizes | P3, P7, P9 |
 | A10: Protocol honesty | Malicious admitted ciphertext policy, privacy threat table, encoded limits, retained actor proof and relay access profile | P1–P2, P5, P9 |
 
-The current plan has no runtime acceptance results. Implementation is complete
+P0 and P1 probe results exist at the inspected baseline; full application
+acceptance remains absent. Implementation is complete
 only when every local gate has its required evidence, the cloud-specific status
 is accurately labeled, all changed implementation paths are in scope, and an
-independent reviewer approves the exact candidate and report. The plan itself
-is delivered through work request #47 and its separate review/landing chain.
+independent reviewer approves the exact candidate and report. The initial plan was
+delivered through request #47. This evidence-based revision is documentation
+request #108; its review/landing is separate from implementation commissioning.
 
 ## STOP conditions and maintenance
 
