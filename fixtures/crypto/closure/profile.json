@@ -1,0 +1,116 @@
+{
+  "schema": "noseq/protocol-closure-profile@1",
+  "status": "proposed; no real decisions adopted; all full gates unpassed",
+  "ordering": "noseq/protocol-candidate@1",
+  "recovery": "noseq/segmented-recovery@2",
+  "base": "499dc13e3ef05f8a30f844df225dc17ce4162297",
+  "inputProfiles": {
+    "fixtures/harness/profile.json": "d981ff9b4351011873c16a3e3303590a7b21f953c01d273ed1a081ae623a3529",
+    "fixtures/crypto/preflight-profile.json": "a3616665f693c81cb134c2d7cab8d17cf135982175715171bf68799a79c11258",
+    "fixtures/crypto/ordered-profile.json": "0f4a02ac48b4ec1d2cb62070dcce5bed26e07ebd6a397ebef27789112633f2f3",
+    "fixtures/crypto/protocol/profile.json": "5540d5fe23ca0369683a28b94a708cf3ff62000d00a473efe8b4b9a159f7b93b",
+    "fixtures/crypto/segmented/profile.json": "e2639d21510ae04a1772e387af5ee92739b6f18892842d65bcfcd6742585a64c"
+  },
+  "decisions": {
+    "D1": "Noseq-specific immutable-order MLS1.0 lower API; incompatible Marmot pair remains STOP, no interoperability",
+    "D2": "Complete eligible genesis-to-sealed-T newcomer history; opaque ordering receipt alone promises no archive; suffix and joint quotas explicit",
+    "D3": "Immutable owner attests historical encrypted control validity and public contexts; clients verify original signatures, coverage and real action openings",
+    "D4": "Retained message openings and independently keyed grants/vaults weaken forward secrecy for promised history; copied old material persists",
+    "D5": "Immutable owner with no transfer; owner vault retains stronger private authority; account-secret-only recovery is insufficient",
+    "D6": "Online owner device required for membership; invalid private content stalls common last-good prefix, no local skip or repair",
+    "D7": "Gateway authorization at highest verified retained F; unseen removal may expose newly retrieved old history; known controls fence subsequent send",
+    "D8": "Infrastructure sees membership, identities, existence, timing and sizes; client host trusted; actual local signer only, external/passkey paths unsupported",
+    "D9": "Exact experimental wire kinds, source/provider/API/runtime pins and joint limits; P1 bounded feasibility separate from later production acceptance"
+  },
+  "suites": [
+    {
+      "id": "node",
+      "cases": [
+        "closure.node.offline-membership-churn",
+        "closure.node.selected-profile-staged-state"
+      ]
+    },
+    {
+      "id": "browser",
+      "cases": [
+        "closure.browser.offline-membership-churn",
+        "closure.browser.selected-profile-staged-state"
+      ]
+    }
+  ],
+  "prerequisite": {
+    "command": "npm run probe:segmented-recovery",
+    "requiredTests": 115
+  },
+  "authorityCases": [
+    "authority.valid-independent-order",
+    "authority.signature-and-git-integrity",
+    "authority.actor-and-authority",
+    "authority.decision-chain-bindings",
+    "authority.review-and-ratification",
+    "authority.source-profile-evidence",
+    "authority.retirement-and-selection",
+    "authority.frontier-and-history",
+    "authority.paths-and-resources",
+    "authority.real-public-missing-adoption"
+  ],
+  "reconstruction": {
+    "schema": "noseq/compact-client@1",
+    "bytes": 16777216,
+    "observedFuturePositions": 64,
+    "pendingOperations": 1,
+    "recordIndexEntries": 65536,
+    "logicalIndexBytes": 16777216,
+    "semantics": "trusted local checkpoint plus independently reopened records; actual P6 atomic storage/promotion deferred",
+    "inheritedRestart": "refused; use explicit async compact reconstruction",
+    "publication": "unsupported; inherited publish refuses; no P6 marker claim"
+  },
+  "authority": {
+    "manifestSchema": "noseq/p1-decision@1",
+    "reviewSchema": "noseq/p1-decision-review@1",
+    "bundleSchema": "noseq/p1-decision-export@1",
+    "policySchema": "noseq/p1-decision-policy@1",
+    "order": [
+      "D",
+      "AD",
+      "Q",
+      "P",
+      "R",
+      "AR",
+      "F"
+    ],
+    "gitseqSource": "d630554a7ba7d99c5f95eb77e1dfa7fd1f41637a",
+    "go": "go1.27.0",
+    "buildFlags": [
+      "-trimpath"
+    ],
+    "cgo": "0",
+    "binarySha256": "c2b0ca9c37993e1a3e3e4df809eebd8a07f3af4a4990f9873ba00781c4c28d35",
+    "buildRecordSha256": "a0f6c5ba50fcca4e6bc19a50d1b01fccc6f0e558fb16c9112a814bc1e8d90c3b",
+    "bounds": {
+      "bundleBytes": 33554432,
+      "gitObjects": 20000,
+      "unpackedGitBytes": 134217728,
+      "gitObjectBytes": 16777216,
+      "sequenceDepth": 10000,
+      "manifestBytes": 1048576,
+      "evidenceFiles": 16384,
+      "evidenceFileBytes": 33554432,
+      "evidenceBytes": 536870912,
+      "pathBytes": 240,
+      "subprocessMilliseconds": 180000
+    },
+    "realGenesis": "77aeeeb3fa42aeb6babdf961f6397ba73fada68b",
+    "realRoot": "26e87ab14ebd2695c1f955a69afa42921dc8cdf037ff0e991a956deb0d320433",
+    "realReviewer": "d6bef632b4d6d5686f40956d7ea220ead36f869fa76f78d45378ef4378aed06c",
+    "realImplementer": "981184b7467c74c2c8cd2783cb8bbc857427c7592a16425d0e2b7206a3768515",
+    "publicMeasurement": {
+      "frontier": "f81c370015e925e2bd356247aa462520072321a6",
+      "depth": 875,
+      "bundleBytes": 1184444,
+      "objects": 2933,
+      "unpackedBytes": 5212874
+    },
+    "fullGates": "always refuse; diagnostic authority validity is not activation"
+  }
+}
